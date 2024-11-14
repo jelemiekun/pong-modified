@@ -7,14 +7,16 @@
 
 #include "GameFlags.h"
 #include "Text.h"
+#include "Controller.h"
 
 class Game {
 private:
 	SDL_Window* gWindow;
 	SDL_Renderer* gRenderer;
 	SDL_Event gEvent;
-	SDL_GameController* gGameController1;
-	SDL_GameController* gGameController2;
+	Controller* gGameController1;
+	Controller* gGameController2;
+	Controller* currentController;
 	SDL_Cursor* gCursor;
 	GameFlags* flags;
 	TTF_Font* gFont;

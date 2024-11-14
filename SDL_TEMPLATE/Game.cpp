@@ -3,7 +3,8 @@
 
 Game::Game() : gWindow(nullptr), gRenderer(nullptr), gGameController1(nullptr),
 				gGameController2(nullptr), gCursor(nullptr), acceptKeyboardInput(false),
-				running(false), flags(nullptr), gFont(nullptr), text(nullptr) {
+				running(false), flags(nullptr), gFont(nullptr), text(nullptr),
+				currentController(nullptr) {
 
 }
 
@@ -40,30 +41,36 @@ void Game::init() {
 	}
 
 	int numControllers = SDL_NumJoysticks();
+	bool controllerFound = false;
 
-	if (numControllers < 0) {
+	if (numControllers <= 0) {
 		std::cout << "Warning: No controllers found. Keyboard input will be enabled" << '\n';
 		acceptKeyboardInput = true;
+		controllerFound = false;
 	} else if (numControllers == 1) {
 		std::cout << "Warning: Only 1 controller found. Keyboard input will be enabled." << '\n';
 		acceptKeyboardInput = true;
+		controllerFound = true;
+		gGameController1 = new Controller;
 	} else if (numControllers >= 2) {
 		std::cout << "2 Controllers found." << '\n';
+		acceptKeyboardInput = false;
+		controllerFound = true;
+		gGameController1 = new Controller;
+		gGameController2 = new Controller;
+	}
 
-		gGameController1 = SDL_GameControllerOpen(0);
+	if (controllerFound) {
+		if (gGameController1 != nullptr) gGameController1->init();
+		if (gGameController2 != nullptr) gGameController2->init();
 
-		if (gGameController1 == nullptr) {
-			std::cout << "Warning: Unable to open game controller1: " << SDL_GetError() << '\n';
+		currentController = new Controller;
+		if (gGameController1->getGameController() != nullptr) {
+			currentController->setGameController(gGameController1->getGameController());
 		} else {
-			std::cout << "Controller 1 opened successfully." << '\n';
-		}
-
-		gGameController2 = SDL_GameControllerOpen(1);
-
-		if (gGameController2 == nullptr) {
-			std::cout << "Warning: Unable to open game controller2: " << SDL_GetError() << '\n';
-		} else {
-			std::cout << "Controller 2 opened successfully." << '\n';
+			if (gGameController2->getGameController() != nullptr) {
+				currentController->setGameController(gGameController2->getGameController());
+			}
 		}
 	}
 
@@ -129,7 +136,21 @@ void Game::input() {
 	while (SDL_PollEvent(&gEvent)) {
 		if (gEvent.type == SDL_QUIT) {
 			running = false;
-		} 
+		} else {
+			// If in start menu
+			if (currentController != nullptr) {
+
+			}
+
+			if (flags->inStart) {
+				switch (gEvent.type) {
+				case SDL_MOUSEMOTION:
+					break;
+				default:
+					break;
+				}
+			}
+		}
 	}
 }
 

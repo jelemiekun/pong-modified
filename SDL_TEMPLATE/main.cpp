@@ -10,15 +10,17 @@ int main(int argc, char* argv[]) {
     uint16_t countFrame = 0;
 
     while (game->isRunning()) {
-        Uint32 startTime = SDL_GetTicks();
+        Uint32 frameStartTime = SDL_GetTicks();
 
         game->input();
         game->update();
         game->render();
 
-        FPSmanager::limitFPS(startTime);
+        FPSmanager::limitFPS(frameStartTime);
         FPSmanager::calculateFPS(countFrame, startTime);
     }
+
+    delete game;
 
     return 0;
 }

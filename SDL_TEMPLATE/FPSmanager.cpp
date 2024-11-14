@@ -6,10 +6,10 @@ void FPSmanager::calculateFPS(uint16_t& countFrame, Uint32& startTime) {
 	Uint32 currentTime = SDL_GetTicks();
 
 	if (currentTime - startTime > 1000) {
-		float fps = countFrame / ((currentTime - startTime) / 1000);
+		float fps = static_cast<float>(countFrame) / ((currentTime - startTime) / 1000.0f);
 		std::cout << "FPS: " << fps << '\n';
 		countFrame = 0;
-		startTime = 0;
+		startTime = currentTime;
 	}
 }
 
