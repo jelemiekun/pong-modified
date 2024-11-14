@@ -22,6 +22,7 @@
     <ClCompile Include="FPSmanager.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -29,6 +30,8 @@
   <ItemGroup>
     <ClInclude Include="FPSmanager.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameFlags.h" />
+    <ClInclude Include="Text.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

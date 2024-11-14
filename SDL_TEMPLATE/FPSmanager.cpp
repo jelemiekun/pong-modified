@@ -1,4 +1,5 @@
 #include "FPSmanager.h"
+#include <iostream>
 
 void FPSmanager::calculateFPS(uint16_t& countFrame, Uint32& startTime) {
 	countFrame++;
@@ -6,6 +7,7 @@ void FPSmanager::calculateFPS(uint16_t& countFrame, Uint32& startTime) {
 
 	if (currentTime - startTime > 1000) {
 		float fps = countFrame / ((currentTime - startTime) / 1000);
+		std::cout << "FPS: " << fps << '\n';
 		countFrame = 0;
 		startTime = 0;
 	}

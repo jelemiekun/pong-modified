@@ -1,6 +1,12 @@
 #pragma once
-#include "SDL.h"
 #include <memory>
+
+#include "SDL.h"
+#include "SDL_image.h"
+#include "SDL_ttf.h"
+
+#include "GameFlags.h"
+#include "Text.h"
 
 class Game {
 private:
@@ -10,6 +16,9 @@ private:
 	SDL_GameController* gGameController1;
 	SDL_GameController* gGameController2;
 	SDL_Cursor* gCursor;
+	GameFlags* flags;
+	TTF_Font* gFont;
+	Text* text;
 	bool acceptKeyboardInput;
 	bool running;
 
@@ -19,6 +28,7 @@ private:
 
 private:
 	void initCursor();
+	void resetFlags();
 
 public:
 	Game();
