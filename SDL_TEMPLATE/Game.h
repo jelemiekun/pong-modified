@@ -8,18 +8,32 @@
 #include "GameFlags.h"
 #include "Text.h"
 #include "Controller.h"
+#include "TextureManager.h"
+#include "Paddle.h"
+#include "Pong.h"
 
 class Game {
 private:
 	SDL_Window* gWindow;
 	SDL_Renderer* gRenderer;
 	SDL_Event gEvent;
+	SDL_Cursor* gCursor;
+	
 	Controller* gGameController1;
 	Controller* gGameController2;
 	Controller* currentController;
-	SDL_Cursor* gCursor;
+
+	Paddle* leftPaddle;
+	Paddle* centerLeftPaddle;
+	Paddle* centerRightPaddle;
+	Paddle* rightPaddle;
+
+	Pong* pong;
+
 	GameFlags* flags;
+	
 	TTF_Font* gFont;
+	
 	Text* text;
 	bool acceptKeyboardInput;
 	bool running;
@@ -30,7 +44,14 @@ private:
 
 private:
 	void initCursor();
+	void initPaddlesAndCircle();
 	void resetFlags();
+	void drawCenterLine();
+	void initClassicGame();
+	void initDoubleEnemyGame();
+	void initDoublePaddleGame();
+
+
 
 public:
 	Game();
