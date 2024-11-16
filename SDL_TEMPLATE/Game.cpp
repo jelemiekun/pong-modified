@@ -188,82 +188,16 @@ void Game::resetFlags() {
 	flags->isClassic = 0;
 	flags->isDoubleEnemy = 0;
 	flags->isDoublePaddle = 0;
-}
 
-void Game::input() {
-	while (SDL_PollEvent(&gEvent)) {
-		if (gEvent.type == SDL_QUIT) {
-			running = false;
-		} else {
-			
-			// If in start menu
-			if (flags->inStart) {
-				// Handle mouse inputs in start menu
-				switch (gEvent.type) {
-				case SDL_MOUSEBUTTONDOWN:
-					if (gEvent.button.button == SDL_BUTTON_LEFT) {
-						int mouseX;
-						int mouseY;
-
-						SDL_GetMouseState(&mouseX, &mouseY);
-
-						// Toggle player modes
-						{
-							// Set to 1-player mode
-							if (mouseX > 402 && mouseX < 500 && mouseY > 200 && mouseY < 220) { flags->isTwoPlayer = 0; }
-
-							// Set to 2-player mode
-							if (mouseX > 582 && mouseX < 680 && mouseY > 200 && mouseY < 220) { flags->isTwoPlayer = 1; }
-						}
-
-						{
-							// Play classic
-							if (mouseX > 405 && mouseX < 675 && mouseY > 250 && mouseY < 310) {
-								flags->inStart = 0;
-								flags->inPlaying = 1;
-								flags->isClassic = 1;
-								initClassicGame();
-							}
-
-							// Play double enemy (single player only)
-							if (!flags->isTwoPlayer) {
-								if (mouseX > 405 && mouseX < 675 && mouseY > 330 && mouseY < 390) {
-									flags->inStart = 0;
-									flags->inPlaying = 1;
-									flags->isDoubleEnemy = 1;
-									initDoubleEnemyGame();
-								}
-							}
-
-							// Play double paddle
-							if (mouseX > 405 && mouseX < 675 && mouseY > 410 && mouseY < 470) {
-								flags->inStart = 0;
-								flags->inPlaying = 1;
-								flags->isDoublePaddle = 1;
-								initDoublePaddleGame();
-							}
-
-							// Quit
-							if (mouseX > 405 && mouseX < 675 && mouseY > 530 && mouseY < 590) {
-								flags->inStart = 1;
-								flags->inPlaying = 0;
-								running = false;
-							}
-						}
-					}
-
-					break;
-				default:
-					break;
-				}
-
-				// Handle controller axis inputs in start enu
-				if (currentController != nullptr) {
-
-				}
-			}
-		}
-	}
+	flags->clicked = 0;
+	flags->dirR = 0;
+	flags->dirUR = 0;
+	flags->dirU = 0;
+	flags->dirUL = 0;
+	flags->dirL = 0;
+	flags->dirDL = 0;
+	flags->dirD = 0;
+	flags->dirDR = 0;
 }
 
 void Game::drawCenterLine() {
@@ -288,28 +222,179 @@ void Game::drawCenterLine() {
 }
 
 void Game::initClassicGame() {
-	const int scale = 6;
-	const int allowance = 50;
+	const int SCALE = 6;
+	const int ALLOWANCE = 50;
 
-	leftPaddle->scaleDstRect(scale);
-	leftPaddle->xPos(allowance);
+	leftPaddle->scaleDstRect(SCALE);
+	leftPaddle->xPos(ALLOWANCE);
 	leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
 
-	rightPaddle->scaleDstRect(scale);
-	rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - allowance);
+	rightPaddle->scaleDstRect(SCALE);
+	rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
 	rightPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
 }
 
-void Game::initDoubleEnemyGame() {
+void Game::initDoubleEnemyOrPaddleGame() {
+	const int SCALE = 3;
+	const int ALLOWANCE = 20;
 
+	leftPaddle->scaleDstRect(SCALE);
+	leftPaddle->xPos(ALLOWANCE);
+	leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+
+	centerLeftPaddle->scaleDstRect(SCALE);
+	centerLeftPaddle->xPos((SCREEN_WIDTH / 2) - centerLeftPaddle->w() - ALLOWANCE);
+	centerLeftPaddle->yPos((SCREEN_HEIGHT / 2) - (centerLeftPaddle->h() / 2));
+
+	centerRightPaddle->scaleDstRect(SCALE);
+	centerRightPaddle->xPos((SCREEN_WIDTH / 2) + ALLOWANCE);
+	centerRightPaddle->yPos((SCREEN_HEIGHT / 2) - (centerLeftPaddle->h() / 2));
+
+	rightPaddle->scaleDstRect(SCALE);
+	rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
+	rightPaddle->yPos((SCREEN_HEIGHT / 2) - (rightPaddle->h() / 2));
 }
 
-void Game::initDoublePaddleGame() {
+void Game::input() {
+	while (SDL_PollEvent(&gEvent)) {
+		if (gEvent.type == SDL_QUIT) {
+			running = false;
+		} else {
+			
+			// If in start menu
+			if (flags->inStart) {
+				// Handle mouse inputs in start menu
+				switch (gEvent.type) {
+				case SDL_MOUSEBUTTONDOWN:
+					if (gEvent.button.button == SDL_BUTTON_LEFT) {
+						flags->clicked = 1;
+					}
 
+					break;
+				default:
+					break;
+				}
+
+				// Handle controller axis inputs in start enu
+				if (currentController != nullptr) {
+					switch (gEvent.type) {
+						// Handle motion momvement of controller
+					case SDL_CONTROLLERAXISMOTION:
+						currentController->inputXYDir();
+
+						flags->dirR = currentController->controllerAngle >= -22.5 && currentController->controllerAngle < 22.5;
+						flags->dirUR = currentController->controllerAngle >= 22.5 && currentController->controllerAngle < 67.5;  // Upper Right
+						flags->dirU = currentController->controllerAngle >= 67.5 && currentController->controllerAngle < 112.5;  // Up
+						flags->dirUL = currentController->controllerAngle >= 112.5 && currentController->controllerAngle < 157.5;  // Upper Left
+						flags->dirL = ((currentController->controllerAngle >= 157.5 && currentController->controllerAngle <= 180) 
+							|| (currentController->controllerAngle >= -180 && currentController->controllerAngle < -157.5)); // Left
+						flags->dirDL = currentController->controllerAngle >= -157.5 && currentController->controllerAngle < -112.5; // Down Left
+						flags->dirD = currentController->controllerAngle >= -112.5 && currentController->controllerAngle < -67.5; // Down
+						flags->dirDR = currentController->controllerAngle >= -67.5 && currentController->controllerAngle < -22.5; // Down Right
+						break;
+					case SDL_CONTROLLERBUTTONDOWN:
+						if (gEvent.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+							flags->clicked = 1;
+						}
+					default:
+						break;
+					}
+					
+				}
+			}
+
+			// If playing
+			if (flags->inPlaying) {
+				// If in classic
+				if (flags->isClassic) {
+					switch (gEvent.type) {
+					case SDL_CONTROLLERBUTTONDOWN:
+						break;
+					default:
+						break;
+					}
+				}
+
+				// If in double paddle or double enemy
+				if (flags->isDoubleEnemy || flags->isDoublePaddle) {
+
+				}
+			}
+		}
+	}
 }
 
 void Game::update() {
+	if (flags->inStart) {
+		int mouseX;
+		int mouseY;
 
+		SDL_GetMouseState(&mouseX, &mouseY);
+		
+		// Handle click event from mouse and controller
+		if (flags->clicked) {
+			// Toggle player modes
+			{
+				// Set to 1-player mode
+				if (mouseX > 402 && mouseX < 500 && mouseY > 200 && mouseY < 220) { flags->isTwoPlayer = 0; }
+
+				// Set to 2-player mode
+				if (mouseX > 582 && mouseX < 680 && mouseY > 200 && mouseY < 220) { flags->isTwoPlayer = 1; }
+			}
+
+			{
+				// Play classic
+				if (mouseX > 405 && mouseX < 675 && mouseY > 250 && mouseY < 310) {
+					flags->inStart = 0;
+					flags->inPlaying = 1;
+					flags->isClassic = 1;
+					initClassicGame();
+				}
+
+				// Play double enemy (single player only)
+				if (!flags->isTwoPlayer) {
+					if (mouseX > 405 && mouseX < 675 && mouseY > 330 && mouseY < 390) {
+						flags->inStart = 0;
+						flags->inPlaying = 1;
+						flags->isDoubleEnemy = 1;
+						initDoubleEnemyOrPaddleGame();
+					}
+				}
+
+				// Play double paddle
+				if (mouseX > 405 && mouseX < 675 && mouseY > 410 && mouseY < 470) {
+					flags->inStart = 0;
+					flags->inPlaying = 1;
+					flags->isDoublePaddle = 1;
+					initDoubleEnemyOrPaddleGame();
+				}
+
+				// Quit
+				if (mouseX > 405 && mouseX < 675 && mouseY > 530 && mouseY < 590) {
+					flags->inStart = 1;
+					flags->inPlaying = 0;
+					running = false;
+				}
+			}
+
+			flags->clicked = 0;
+		}
+
+
+		// Move the cursor using controller
+		if (currentController != nullptr) {
+			float movement = CURSOR_SPEED * currentController->magnitude;
+
+			if (flags->dirR) SDL_WarpMouseInWindow(gWindow, mouseX + movement, mouseY);
+			if (flags->dirUR) SDL_WarpMouseInWindow(gWindow, mouseX + movement, mouseY - movement);
+			if (flags->dirU) SDL_WarpMouseInWindow(gWindow, mouseX, mouseY - movement);
+			if (flags->dirUL) SDL_WarpMouseInWindow(gWindow, mouseX - movement, mouseY - movement);
+			if (flags->dirL) SDL_WarpMouseInWindow(gWindow, mouseX - movement, mouseY);
+			if (flags->dirDL) SDL_WarpMouseInWindow(gWindow, mouseX - movement, mouseY + movement);
+			if (flags->dirD) SDL_WarpMouseInWindow(gWindow, mouseX, mouseY + movement);
+			if (flags->dirDR) SDL_WarpMouseInWindow(gWindow, mouseX + movement, mouseY + movement);
+		}
+	}
 }
 
 void Game::render() {
@@ -318,6 +403,7 @@ void Game::render() {
 
 	// If in start menu
 	if (flags->inStart) {
+		SDL_ShowCursor(SDL_ENABLE);
 		// Main border
 		{ 
 			SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
@@ -433,10 +519,20 @@ void Game::render() {
 	}
 
 	if (flags->inPlaying) {
-		if (flags->isClassic) {
-			drawCenterLine();
-			leftPaddle->render();
-			rightPaddle->render();
+		SDL_ShowCursor(SDL_DISABLE);
+
+		static uint8_t scoreLeft = 0;
+		static uint8_t scoreRight = 0;
+
+		// Render left and right paddles, and center line
+		drawCenterLine();
+		leftPaddle->render();
+		rightPaddle->render();
+
+		// Render additional center paddles if double gameplay is chosen
+		if (flags->isDoubleEnemy || flags->isDoublePaddle) {
+			centerLeftPaddle->render();
+			centerRightPaddle->render();
 		}
 	}
 

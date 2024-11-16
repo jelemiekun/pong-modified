@@ -27,9 +27,11 @@ void Object::init(SDL_Rect* srcRect) {
 
 
 void Object::scaleDstRect(const double& scale) {
+	dstRect->w = this->srcRect->w;
+	dstRect->h = this->srcRect->h;
+
 	dstRect->w *= scale;
 	dstRect->h *= scale;
-	std::cout << "dstRect:" << dstRect->x << ", " << dstRect->y << ", " << dstRect->w << ", " << dstRect->h << '\n';
 }
 
 void Object::move(const bool& isUp, const int& velocity) {
@@ -62,7 +64,5 @@ int Object::h() const {
 }
 
 void Object::render() const {
-	 //std::cout << "srcRect:" << srcRect->x << ", " << srcRect->y << ", " << srcRect->w << ", " << srcRect->h << '\n';
-	// std::cout << "dstRect:" << dstRect->x << ", " << dstRect->y << ", " << dstRect->w << ", " << dstRect->h << '\n';
 	SDL_RenderCopy(renderer, spriteSheet, srcRect, dstRect);
 }

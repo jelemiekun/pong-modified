@@ -41,6 +41,7 @@ private:
 private:
 	constexpr static int SCREEN_WIDTH = 1080;
 	constexpr static int SCREEN_HEIGHT = 720;
+	constexpr static uint8_t CURSOR_SPEED = 20;
 
 private:
 	void initCursor();
@@ -48,8 +49,7 @@ private:
 	void resetFlags();
 	void drawCenterLine();
 	void initClassicGame();
-	void initDoubleEnemyGame();
-	void initDoublePaddleGame();
+	void initDoubleEnemyOrPaddleGame();
 
 
 
