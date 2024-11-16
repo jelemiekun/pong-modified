@@ -309,36 +309,39 @@ void Game::input() {
 			// If playing
 			if (flags->inPlaying) {
 
-				if (gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERAXISMOTION) {
-					gGameController1->inputXYDir();
+				// Handle first input
+				{
+					if (gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERAXISMOTION) {
+						gGameController1->inputXYDir();
 
-					flags->dirU = gGameController1->controllerAngle >= 67.5 && gGameController1->controllerAngle < 112.5;
-					flags->dirD = gGameController1->controllerAngle >= -112.5 && gGameController1->controllerAngle < -67.5;
-				} else if ((gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP) && gGameController1 == nullptr) {
-					// Handle key 'w' events
-					if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 1;
-					if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 0;
+						flags->dirU = gGameController1->controllerAngle >= 67.5 && gGameController1->controllerAngle < 112.5;
+						flags->dirD = gGameController1->controllerAngle >= -112.5 && gGameController1->controllerAngle < -67.5;
+					} else if ((gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP) && gGameController1 == nullptr) {
+						// Handle key 'w' events
+						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 1;
+						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 0;
 
-					// Handle key 's' events
-					if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 1;
-					if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 0;
+						// Handle key 's' events
+						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 1;
+						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 0;
+					}
 				}
 
-				// If in double paddle or double enemy
-				if (flags->isTwoPlayer && (flags->isDoubleEnemy || flags->isDoublePaddle)) {
+				// If two players, handle second input
+				if (flags->isTwoPlayer || flags->isDoublePaddle) {
 					if (gGameController2 != nullptr && gEvent.type == SDL_CONTROLLERAXISMOTION) {
 						gGameController2->inputXYDir();
 
 						flags->dirUP2 = gGameController2->controllerAngle >= 67.5 && gGameController2->controllerAngle < 112.5;
 						flags->dirDP2 = gGameController2->controllerAngle >= -112.5 && gGameController2->controllerAngle < -67.5;
-					} else if (gGameController2 != nullptr && (gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP)) {
-						// Handle key 'w' events
-						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_UP) flags->dirU = 1;
-						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_UP) flags->dirU = 0;
+					} else if (gGameController2 == nullptr && (gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP)) {
+						// Handle key 'arrow up' events
+						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_UP) flags->dirUP2 = 1;
+						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_UP) flags->dirUP2 = 0;
 
-						// Handle key 's' events
-						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirD = 1;
-						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirD = 0;
+						// Handle key 'arrow down' events
+						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirDP2 = 1;
+						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirDP2 = 0;
 
 					}
 				}
@@ -424,21 +427,48 @@ void Game::update() {
 	if (flags->inPlaying) {
 		// If classic
 		if (flags->isClassic) {
-			// Player one
+			// Handle input player one
 			int velocityP1 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
 			
 			if (flags->dirU) leftPaddle->move(true, velocityP1);
 			if (flags->dirD) leftPaddle->move(false, velocityP1);
 
-			// Player two
+			// Handle input player two
 			if (flags->isTwoPlayer) {
-				int velocityP2 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
+				int velocityP2 = (gGameController2 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController2->magnitude;
 
-				if (flags->dirU) rightPaddle->move(true, velocityP2);
-				if (flags->dirD) rightPaddle->move(false, velocityP2);
-			} else {
-
+				if (flags->dirUP2) rightPaddle->move(true, velocityP2);
+				if (flags->dirDP2) rightPaddle->move(false, velocityP2);
+			} else { // Move the paddle on its own if two players are not playing
+				rightPaddle->moveOnOwn();
 			}
+		}
+
+		if (flags->isDoubleEnemy || flags->isDoublePaddle) {
+			// Handle input player two
+			int velocityP1 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
+
+			// Move the center left paddle
+			if (flags->dirU) centerLeftPaddle->move(true, velocityP1);
+			if (flags->dirD) centerLeftPaddle->move(false, velocityP1);
+
+			// If double enemy, move also the center right paddle
+			if (flags->isDoubleEnemy) {
+				if (flags->dirU) centerRightPaddle->move(true, velocityP1);
+				if (flags->dirD) centerRightPaddle->move(false, velocityP1);
+			}
+
+			// If double paddle, handle second input
+			if (flags->isDoublePaddle) {
+				int velocityP2 = (gGameController2 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController2->magnitude;
+
+				if (flags->dirUP2) centerRightPaddle->move(true, velocityP2);
+				if (flags->dirDP2) centerRightPaddle->move(false, velocityP2);
+			}
+
+			// Then move on own the left and right paddle
+			leftPaddle->moveOnOwn();
+			rightPaddle->moveOnOwn();
 		}
 	}
 }
