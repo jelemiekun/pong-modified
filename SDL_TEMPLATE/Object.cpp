@@ -34,11 +34,6 @@ void Object::scaleDstRect(const double& scale) {
 	dstRect->h *= scale;
 }
 
-void Object::move(const bool& isUp, const int& velocity) {
-	if (isUp) dstRect->y -= velocity;
-	else dstRect->y += velocity;
-}
-
 void Object::xPos(const int x) {
 	dstRect->x = x;
 }

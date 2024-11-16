@@ -6,7 +6,8 @@ Game::Game() : gWindow(nullptr), gRenderer(nullptr), gGameController1(nullptr),
 				gGameController2(nullptr), gCursor(nullptr), acceptKeyboardInput(false),
 				running(false), flags(nullptr), gFont(nullptr), text(nullptr),
 				currentController(nullptr), leftPaddle(nullptr), centerLeftPaddle(nullptr),
-				centerRightPaddle(nullptr), rightPaddle(nullptr), pong(nullptr) {
+				centerRightPaddle(nullptr), rightPaddle(nullptr), 
+				pong1(nullptr), pong2(nullptr), timerPong1(nullptr), timerPong2(nullptr) {
 
 }
 
@@ -113,6 +114,8 @@ void Game::initPaddlesAndCircle() {
 
 	// Initialize paddles
 	{
+		Paddle::SCREEN_HEIGHT = SCREEN_HEIGHT;
+
 		SDL_Rect* rectLeftPaddle = new SDL_Rect;
 		rectLeftPaddle->x = 0;
 		rectLeftPaddle->y = 0;
@@ -141,17 +144,31 @@ void Game::initPaddlesAndCircle() {
 
 	// Initialize pong
 	{
+		Pong::SCREEN_WIDTH = SCREEN_WIDTH;
+		Pong::SCREEN_HEIGHT = SCREEN_HEIGHT;
+
 		SDL_Rect* rectPong = new SDL_Rect;
 		rectPong->x = (w / 8) * 4;
 		rectPong->y = 0;
 		rectPong->w = w / 8;
 		rectPong->h = w / 4;
 
-		pong = new Pong;
+		pong1 = new Pong;
+		pong2 = new Pong;
 
-		pong->init(rectPong);
+		pong1->init(rectPong);
+		pong2->init(rectPong);
 
 		delete rectPong;
+	}
+
+	// Initialize pong timer
+	{
+		timerPong1 = new Timer;
+		timerPong1->setTimer(3500);
+
+		timerPong2 = new Timer;
+		timerPong2->setTimer(3500);
 	}
 }
 
@@ -203,24 +220,36 @@ void Game::resetFlags() {
 	flags->dirDP2 = 0;
 }
 
-void Game::drawCenterLine() {
+void Game::drawCenterLines() {
 	SDL_SetRenderDrawColor(gRenderer, 255, 255, 255, 255);
 
-	int y = 0;
-	bool drawDash = true;
-	const int DASH_LENGTH = 20;
-	const int GAP_LENGTH = 10;
+	auto drawDashedLines = [](SDL_Renderer*& gRenderer, const int& x) {
+		int y = 0;
+		bool drawDash = true;
+		const int DASH_LENGTH = 10;
+		const int GAP_LENGTH = 10;
 
-	while (y < SCREEN_HEIGHT) {
-		if (drawDash) {
-			// Draw a line segment (dash)
-			SDL_RenderDrawLine(gRenderer, SCREEN_WIDTH / 2, y, SCREEN_WIDTH / 2, y + DASH_LENGTH);
-			y += DASH_LENGTH;
-		} else {
-			// Skip a gap
-			y += GAP_LENGTH;
+		while (y < SCREEN_HEIGHT) {
+			if (drawDash) {
+				// Draw a line segment (dash)
+				SDL_RenderDrawLine(gRenderer, x, y, x, y + DASH_LENGTH);
+				y += DASH_LENGTH;
+			} else {
+				// Skip a gap
+				y += GAP_LENGTH;
+			}
+			drawDash = !drawDash;
 		}
-		drawDash = !drawDash;
+	};
+
+	if (flags->isClassic) {
+		drawDashedLines(gRenderer, SCREEN_WIDTH / 2);
+	}
+	if (flags->isDoubleEnemy || flags->isDoublePaddle) {
+		SDL_RenderDrawLine(gRenderer, SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);
+
+		drawDashedLines(gRenderer, (SCREEN_WIDTH / 4));
+		drawDashedLines(gRenderer, (SCREEN_WIDTH / 4) * 3);
 	}
 }
 
@@ -235,6 +264,10 @@ void Game::initClassicGame() {
 	rightPaddle->scaleDstRect(SCALE);
 	rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
 	rightPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+
+	pong1->scaleDstRect(SCALE / 2);
+
+	Pong::isClassic = true;
 }
 
 void Game::initDoubleEnemyOrPaddleGame() {
@@ -256,6 +289,12 @@ void Game::initDoubleEnemyOrPaddleGame() {
 	rightPaddle->scaleDstRect(SCALE);
 	rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
 	rightPaddle->yPos((SCREEN_HEIGHT / 2) - (rightPaddle->h() / 2));
+
+	pong1->scaleDstRect(SCALE / 2);
+
+	pong2->scaleDstRect(SCALE / 2);
+
+	Pong::isClassic = false;
 }
 
 void Game::input() {
@@ -425,50 +464,75 @@ void Game::update() {
 
 	// If playing
 	if (flags->inPlaying) {
-		// If classic
-		if (flags->isClassic) {
-			// Handle input player one
-			int velocityP1 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
-			
-			if (flags->dirU) leftPaddle->move(true, velocityP1);
-			if (flags->dirD) leftPaddle->move(false, velocityP1);
 
-			// Handle input player two
-			if (flags->isTwoPlayer) {
-				int velocityP2 = (gGameController2 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController2->magnitude;
+		// Update paddles
+		{
+			if (flags->isClassic) {
+				// Handle input player one
+				int velocityP1 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
 
-				if (flags->dirUP2) rightPaddle->move(true, velocityP2);
-				if (flags->dirDP2) rightPaddle->move(false, velocityP2);
-			} else { // Move the paddle on its own if two players are not playing
+				if (flags->dirU) leftPaddle->move(true, velocityP1);
+				if (flags->dirD) leftPaddle->move(false, velocityP1);
+
+				// Handle input player two
+				if (flags->isTwoPlayer) {
+					int velocityP2 = (gGameController2 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController2->magnitude;
+
+					if (flags->dirUP2) rightPaddle->move(true, velocityP2);
+					if (flags->dirDP2) rightPaddle->move(false, velocityP2);
+				} else { // Move the paddle on its own if two players are not playing
+					rightPaddle->moveOnOwn();
+				}
+			}
+
+			if (flags->isDoubleEnemy || flags->isDoublePaddle) {
+				// Handle input player one
+				int velocityP1 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
+
+				// Move the center left paddle
+				if (flags->dirU) centerLeftPaddle->move(true, velocityP1);
+				if (flags->dirD) centerLeftPaddle->move(false, velocityP1);
+
+				// If double enemy, move also the center right paddle
+				if (flags->isDoubleEnemy) {
+					if (flags->dirU) centerRightPaddle->move(true, velocityP1);
+					if (flags->dirD) centerRightPaddle->move(false, velocityP1);
+				}
+
+				// If double paddle, handle second input
+				if (flags->isDoublePaddle) {
+					int velocityP2 = (gGameController2 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController2->magnitude;
+
+					if (flags->dirUP2) centerRightPaddle->move(true, velocityP2);
+					if (flags->dirDP2) centerRightPaddle->move(false, velocityP2);
+				}
+
+				// Then move on own the left and right paddle
+				leftPaddle->moveOnOwn();
 				rightPaddle->moveOnOwn();
 			}
 		}
-
-		if (flags->isDoubleEnemy || flags->isDoublePaddle) {
-			// Handle input player two
-			int velocityP1 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
-
-			// Move the center left paddle
-			if (flags->dirU) centerLeftPaddle->move(true, velocityP1);
-			if (flags->dirD) centerLeftPaddle->move(false, velocityP1);
-
-			// If double enemy, move also the center right paddle
-			if (flags->isDoubleEnemy) {
-				if (flags->dirU) centerRightPaddle->move(true, velocityP1);
-				if (flags->dirD) centerRightPaddle->move(false, velocityP1);
+		
+		// Update pong(s)
+		{
+			if (!pong1->spawned && !timerPong1->started) {
+				timerPong1->startCountdown();
+			} else if (!pong1->spawned && timerPong1->started && timerPong1->isFinish()) {
+				pong1->spawn(true);
+			} else if (pong1->spawned) {
+				pong1->move(true, PONG_SPEED);
 			}
 
-			// If double paddle, handle second input
-			if (flags->isDoublePaddle) {
-				int velocityP2 = (gGameController2 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController2->magnitude;
-
-				if (flags->dirUP2) centerRightPaddle->move(true, velocityP2);
-				if (flags->dirDP2) centerRightPaddle->move(false, velocityP2);
+			// If double enemy or double paddle, update also the second pong
+			if (flags->isDoubleEnemy || flags->isDoublePaddle) {
+				if (!pong2->spawned && !timerPong2->started) {
+					timerPong2->startCountdown();
+				} else if (!pong2->spawned && timerPong2->started && timerPong2->isFinish()) {
+					pong2->spawn(false);
+				} else if (pong2->spawned) {
+					pong2->move(true, PONG_SPEED);
+				}
 			}
-
-			// Then move on own the left and right paddle
-			leftPaddle->moveOnOwn();
-			rightPaddle->moveOnOwn();
 		}
 	}
 }
@@ -600,15 +664,28 @@ void Game::render() {
 		static uint8_t scoreLeft = 0;
 		static uint8_t scoreRight = 0;
 
-		// Render left and right paddles, and center line
-		drawCenterLine();
-		leftPaddle->render();
-		rightPaddle->render();
+		// Render paddles
+		{
+			// Render left and right paddles, and center line
+			drawCenterLines();
+			leftPaddle->render();
+			rightPaddle->render();
 
-		// Render additional center paddles if double gameplay is chosen
-		if (flags->isDoubleEnemy || flags->isDoublePaddle) {
-			centerLeftPaddle->render();
-			centerRightPaddle->render();
+			// Render additional center paddles if double gameplay is chosen
+			if (flags->isDoubleEnemy || flags->isDoublePaddle) {
+				centerLeftPaddle->render();
+				centerRightPaddle->render();
+			}
+		}
+
+
+		// Render pong
+		{
+			if (pong1->spawned)	pong1->render();
+
+			if ((flags->isDoubleEnemy || flags->isDoublePaddle) && pong2->spawned) {
+				pong2->render();
+			}
 		}
 	}
 

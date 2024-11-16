@@ -7,7 +7,7 @@ public:
 	static SDL_Texture* spriteSheet;
 	static SDL_Renderer* renderer;
 
-private:
+protected:
 	SDL_Rect* srcRect;
 	SDL_Rect* dstRect;
 
@@ -18,7 +18,7 @@ protected:
 public:
 	void init(SDL_Rect* srcRect);
 	void scaleDstRect(const double& scale);
-	void move(const bool& isUp, const int& velocity);
+	virtual void move(const bool& isUp, const int& velocity) = 0;
 	void xPos(const int x);
 	void yPos(const int y);
 	int xPos() const;

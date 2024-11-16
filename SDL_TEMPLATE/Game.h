@@ -11,6 +11,7 @@
 #include "TextureManager.h"
 #include "Paddle.h"
 #include "Pong.h"
+#include "Timer.h"
 
 class Game {
 private:
@@ -28,7 +29,11 @@ private:
 	Paddle* centerRightPaddle;
 	Paddle* rightPaddle;
 
-	Pong* pong;
+	Pong* pong1;
+	Pong* pong2;
+
+	Timer* timerPong1;
+	Timer* timerPong2;
 
 	GameFlags* flags;
 	
@@ -43,12 +48,13 @@ private:
 	constexpr static int SCREEN_HEIGHT = 720;
 	constexpr static uint8_t CURSOR_SPEED = 20;
 	constexpr static uint8_t OBJECTSPEED = 20;
+	constexpr static uint8_t PONG_SPEED = 10;
 
 private:
 	void initCursor();
 	void initPaddlesAndCircle();
 	void resetFlags();
-	void drawCenterLine();
+	void drawCenterLines();
 	void initClassicGame();
 	void initDoubleEnemyOrPaddleGame();
 
