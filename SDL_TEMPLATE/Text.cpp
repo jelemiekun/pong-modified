@@ -2,7 +2,9 @@
 
 Text::Text() : mTexture(nullptr) {}
 
-void Text::loadFromRenderedText(SDL_Renderer*& renderer, TTF_Font*& gFont, const std::string& text, const SDL_Rect* dstRect, const bool& isTransparent) {
+TTF_Font* Text::gFont = nullptr;
+
+void Text::loadFromRenderedText(SDL_Renderer*& renderer, const std::string& text, const SDL_Rect* dstRect, const bool& isTransparent) {
 	if (mTexture != nullptr) SDL_DestroyTexture(mTexture);
 	mTexture = nullptr;
 

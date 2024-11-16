@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <iostream>
 #include <memory>
+#include <string>
 
 Game::Game() : gWindow(nullptr), gRenderer(nullptr), gGameController1(nullptr),
 				gGameController2(nullptr), gCursor(nullptr), acceptKeyboardInput(false),
@@ -93,6 +94,7 @@ void Game::init() {
 		} else {
 			std::cout << "Font loaded successfully." << '\n';
 			text = new Text;
+			text->gFont = gFont;
 		}
 	}
 
@@ -246,6 +248,15 @@ void Game::initClassicGame() {
 			timerPong1 = new Timer;
 			timerPong1->setTimer(3500);
 		}
+
+		// Initialize scores
+		{
+			player1Score = new uint8_t;
+			*player1Score = 0;
+
+			bot1Score = new uint8_t;
+			*bot1Score = 0;
+		}
 	}
 
 	// Initialize size and positions
@@ -328,6 +339,21 @@ void Game::initDoubleEnemyOrPaddleGame() {
 			timerPong2 = new Timer;
 			timerPong2->setTimer(3500);
 		}
+
+		// Initialize scores
+		{
+			player1Score = new uint8_t;
+			*player1Score = 0;
+
+			player2Score = new uint8_t;
+			*player2Score = 0;
+
+			bot1Score = new uint8_t;
+			*bot1Score = 0;
+
+			bot2Score = new uint8_t;
+			*bot2Score = 0;
+		}
 	}
 
 	// Initialize size and positions
@@ -402,16 +428,7 @@ void Game::input() {
 			// If in start menu
 			if (flags->inStart) {
 				// Handle mouse inputs in start menu
-				switch (gEvent.type) {
-				case SDL_MOUSEBUTTONDOWN:
-					if (gEvent.button.button == SDL_BUTTON_LEFT) {
-						flags->clicked = 1;
-					}
-
-					break;
-				default:
-					break;
-				}
+				if (gEvent.type == SDL_MOUSEBUTTONDOWN && gEvent.button.button == SDL_BUTTON_LEFT) flags->clicked = 1;
 
 				// Handle controller axis inputs in start enu
 				if (currentController != nullptr) {
@@ -616,6 +633,14 @@ void Game::update() {
 		// Update pong(s)
 		{
 			if (!pong1->spawned && !timerPong1->started) {
+				// Check if who scored
+				if (pong1->scored) {
+					if (pong1->playerScored) *player1Score +=  1;
+					else *bot1Score += 1;
+
+					pong1->scored = 0;
+				}
+
 				timerPong1->startCountdown();
 			} else if (!pong1->spawned && timerPong1->started && timerPong1->isFinish()) {
 				pong1->spawn(true);
@@ -626,6 +651,14 @@ void Game::update() {
 			// If double enemy or double paddle, update also the second pong
 			if (flags->isDoubleEnemy || flags->isDoublePaddle) {
 				if (!pong2->spawned && !timerPong2->started) {
+					// Check if who scored
+					if (pong2->scored) {
+						if (pong2->playerScored) *player2Score += 1;
+						else *bot2Score += 1;
+
+						pong2->scored = 0;
+					}
+
 					timerPong2->startCountdown();
 				} else if (!pong2->spawned && timerPong2->started && timerPong2->isFinish()) {
 					pong2->spawn(false);
@@ -659,7 +692,7 @@ void Game::render() {
 			SDL_RenderFillRect(gRenderer, &backgroundBlack);
 
 			SDL_Rect textDstRect = { 400, 110, 290, 80 };
-			text->loadFromRenderedText(gRenderer, gFont, "PONG", &textDstRect);
+			text->loadFromRenderedText(gRenderer, "PONG", &textDstRect);
 		}
 		// Players
 		{
@@ -675,7 +708,7 @@ void Game::render() {
 
 			// Text destination for "1 PLAYER"
 			SDL_Rect textDstRect = { 430, 202, 70, 20 };
-			text->loadFromRenderedText(gRenderer, gFont, "1 PLAYER", &textDstRect);
+			text->loadFromRenderedText(gRenderer, "1 PLAYER", &textDstRect);
 
 
 			// White background for "2 PLAYERS" option
@@ -690,7 +723,7 @@ void Game::render() {
 
 			// Text destination for "2 PLAYERS"
 			textDstRect = { 610, 202, 70, 20 };
-			text->loadFromRenderedText(gRenderer, gFont, "2 PLAYERS", &textDstRect);
+			text->loadFromRenderedText(gRenderer, "2 PLAYERS", &textDstRect);
 
 
 			// Toggle
@@ -711,7 +744,7 @@ void Game::render() {
 			SDL_RenderFillRect(gRenderer, &backgroundBlack);
 
 			SDL_Rect textDstRect = { 472, 262, 140, 40 };
-			text->loadFromRenderedText(gRenderer, gFont, "CLASSIC", &textDstRect);
+			text->loadFromRenderedText(gRenderer, "CLASSIC", &textDstRect);
 		}
 		// Double Enemy
 		{ 
@@ -727,7 +760,7 @@ void Game::render() {
 			SDL_RenderFillRect(gRenderer, &backgroundBlack);
 
 			SDL_Rect textDstRect = { 422, 342, 240, 40 }; 
-			text->loadFromRenderedText(gRenderer, gFont, "DOUBLE ENEMY", &textDstRect, flags->isTwoPlayer);
+			text->loadFromRenderedText(gRenderer, "DOUBLE ENEMY", &textDstRect, flags->isTwoPlayer);
 		}
 		// Double Paddle
 		{ 
@@ -740,7 +773,7 @@ void Game::render() {
 			SDL_RenderFillRect(gRenderer, &backgroundBlack);
 
 			SDL_Rect textDstRect = { 422, 422, 240, 40 }; 
-			text->loadFromRenderedText(gRenderer, gFont, "DOUBLE PADDLE", &textDstRect);
+			text->loadFromRenderedText(gRenderer, "DOUBLE PADDLE", &textDstRect);
 
 		}
 		// Quit
@@ -754,7 +787,7 @@ void Game::render() {
 			SDL_RenderFillRect(gRenderer, &backgroundBlack);
 
 			SDL_Rect textDstRect = { 494, 542, 90, 40 }; 
-			text->loadFromRenderedText(gRenderer, gFont, "QUIT", &textDstRect);
+			text->loadFromRenderedText(gRenderer, "QUIT", &textDstRect);
 		}
 	}
 
@@ -786,8 +819,35 @@ void Game::render() {
 
 		// Render scores
 		{
-			if (flags->isClassic || flags->isDoubleEnemy) {
+			int X_ALLOWANCE = 60;
+			int Y_ALLOWANCE = 20;
+			if (flags->isClassic) {
+				SDL_Rect rectScoreLeft = { 0, Y_ALLOWANCE, 40, 60 };
+				rectScoreLeft.x = (SCREEN_WIDTH / 2) - rectScoreLeft.w - X_ALLOWANCE;
+				text->loadFromRenderedText(gRenderer, std::to_string(*player1Score), &rectScoreLeft);
 
+				SDL_Rect rectScoreRight = { 0, Y_ALLOWANCE, 40, 60 };
+				rectScoreLeft.x = (SCREEN_WIDTH / 2) + X_ALLOWANCE;
+				text->loadFromRenderedText(gRenderer, std::to_string(*bot1Score), &rectScoreLeft);
+			} else {
+				int WIDTH = 40;
+				int HEIGHT = 60;
+
+				SDL_Rect rectBot1Score = { 0, Y_ALLOWANCE, WIDTH, HEIGHT };
+				rectBot1Score.x = (SCREEN_WIDTH / 4) - rectBot1Score.w - X_ALLOWANCE;
+				text->loadFromRenderedText(gRenderer, std::to_string(*bot1Score), &rectBot1Score);
+
+				SDL_Rect rectPlayer1Score = { 0, Y_ALLOWANCE, WIDTH, HEIGHT };
+				rectPlayer1Score.x = (SCREEN_WIDTH / 4) + X_ALLOWANCE;
+				text->loadFromRenderedText(gRenderer, std::to_string(*player1Score), &rectPlayer1Score);
+
+				SDL_Rect rectPlayer2Score = { 0, Y_ALLOWANCE, WIDTH, HEIGHT };
+				rectPlayer2Score.x = ((SCREEN_WIDTH / 4) * 3) - rectPlayer2Score.w - X_ALLOWANCE;
+				text->loadFromRenderedText(gRenderer, std::to_string(*player2Score), &rectPlayer2Score);
+
+				SDL_Rect rectBot2Score = { 0, Y_ALLOWANCE, WIDTH, HEIGHT };
+				rectBot2Score.x = ((SCREEN_WIDTH / 4) * 3) + X_ALLOWANCE;
+				text->loadFromRenderedText(gRenderer, std::to_string(*bot2Score), &rectBot2Score);
 			}
 		}
 	}

@@ -3,8 +3,7 @@
 #include <iostream>
 
 Pong::Pong() : Object(), dirX(DIRECTIONS::NONE), dirY(DIRECTIONS::NONE),
-spawned(false) {
-}
+            spawned(false), scored(false), playerScored(false) {}
 
 Pong::~Pong() {}
 
@@ -34,6 +33,9 @@ void Pong::move(const bool& isUpOrIsLeft, const int& velocity) {
 
     if (isClassic) {
         if ((dstRect->x + dstRect->w) < 0 || dstRect->x > SCREEN_WIDTH) {
+            playerScored = dstRect->x > SCREEN_WIDTH;
+
+            scored = true;
             spawned = false;
             dirX = DIRECTIONS::NONE;
             dirY = DIRECTIONS::NONE;
@@ -41,12 +43,18 @@ void Pong::move(const bool& isUpOrIsLeft, const int& velocity) {
     } else {
         if (isUpOrIsLeft) {
             if ((dstRect->x + dstRect->w) < 0 || (dstRect->x > SCREEN_WIDTH / 2)) {
+                playerScored = (dstRect->x + dstRect->w) < 0;
+
+                scored = true;
                 spawned = false;
                 dirX = DIRECTIONS::NONE;
                 dirY = DIRECTIONS::NONE;
             }
         } else {
             if ((dstRect->x + dstRect->w) < SCREEN_WIDTH / 2 || (dstRect->x > SCREEN_WIDTH)) {
+                playerScored = (dstRect->x > SCREEN_WIDTH);
+
+                scored = true;
                 spawned = false;
                 dirX = DIRECTIONS::NONE;
                 dirY = DIRECTIONS::NONE;

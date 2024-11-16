@@ -22,6 +22,8 @@ private:
 
 public:
 	bool spawned;
+	bool scored;
+	bool playerScored;
 
 public:
 	Pong();
