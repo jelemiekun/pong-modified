@@ -7,9 +7,9 @@ Game::Game() : gWindow(nullptr), gRenderer(nullptr), gGameController1(nullptr),
 				running(false), flags(nullptr), gFont(nullptr), text(nullptr),
 				currentController(nullptr), leftPaddle(nullptr), centerLeftPaddle(nullptr),
 				centerRightPaddle(nullptr), rightPaddle(nullptr), 
-				pong1(nullptr), pong2(nullptr), timerPong1(nullptr), timerPong2(nullptr) {
-
-}
+				pong1(nullptr), pong2(nullptr), timerPong1(nullptr), timerPong2(nullptr),
+				player1Score(nullptr), player2Score(nullptr), bot1Score(nullptr), bot2Score(nullptr)
+				{}
 
 Game::~Game() {}
 
@@ -254,7 +254,7 @@ void Game::drawCenterLines() {
 }
 
 void Game::initClassicGame() {
-	const int SCALE = 6;
+	const int SCALE = 5;
 	const int ALLOWANCE = 50;
 
 	leftPaddle->scaleDstRect(SCALE);
@@ -271,7 +271,7 @@ void Game::initClassicGame() {
 }
 
 void Game::initDoubleEnemyOrPaddleGame() {
-	const int SCALE = 3;
+	const int SCALE = 2;
 	const int ALLOWANCE = 20;
 
 	leftPaddle->scaleDstRect(SCALE);
@@ -347,6 +347,9 @@ void Game::input() {
 
 			// If playing
 			if (flags->inPlaying) {
+				if ((gEvent.type == SDL_KEYDOWN) && (gEvent.key.keysym.sym == SDLK_ESCAPE)) {
+					resetFlags();
+				}
 
 				// Handle first input
 				{
@@ -530,7 +533,7 @@ void Game::update() {
 				} else if (!pong2->spawned && timerPong2->started && timerPong2->isFinish()) {
 					pong2->spawn(false);
 				} else if (pong2->spawned) {
-					pong2->move(true, PONG_SPEED);
+					pong2->move(false, PONG_SPEED);
 				}
 			}
 		}
@@ -660,10 +663,6 @@ void Game::render() {
 
 	if (flags->inPlaying) {
 		SDL_ShowCursor(SDL_DISABLE);
-
-		static uint8_t scoreLeft = 0;
-		static uint8_t scoreRight = 0;
-
 		// Render paddles
 		{
 			// Render left and right paddles, and center line
@@ -685,6 +684,13 @@ void Game::render() {
 
 			if ((flags->isDoubleEnemy || flags->isDoublePaddle) && pong2->spawned) {
 				pong2->render();
+			}
+		}
+
+		// Render scores
+		{
+			if (flags->isClassic || flags->isDoubleEnemy) {
+
 			}
 		}
 	}

@@ -43,6 +43,11 @@ private:
 	bool acceptKeyboardInput;
 	bool running;
 
+	uint8_t* player1Score;
+	uint8_t* player2Score;
+	uint8_t* bot1Score;
+	uint8_t* bot2Score;
+
 private:
 	constexpr static int SCREEN_WIDTH = 1080;
 	constexpr static int SCREEN_HEIGHT = 720;

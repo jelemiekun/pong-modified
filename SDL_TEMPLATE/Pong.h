@@ -28,6 +28,6 @@ public:
 	~Pong();
 
 	void move(const bool& isUp, const int& velocity) override;
-	void spawn(const bool& isLeft);
+	void spawn(const bool& isUpOrIsLeft);
 };
 
