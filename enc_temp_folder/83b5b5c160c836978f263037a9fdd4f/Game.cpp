@@ -878,40 +878,29 @@ void Game::render() {
 			}
 
 			if (flags->isDoubleEnemy || flags->isDoublePaddle) {
-				int X_ALLOWANCE = 20;
-				
 				bool finished1 = *player1Score >= 10 || *bot1Score >= 10;
 
 				if (finished1) {
+					int X_ALLOWANCE = 20;
 
 					SDL_Rect rectLeft = { X_ALLOWANCE, 0, (SCREEN_WIDTH / 4) - (X_ALLOWANCE * 2), 50 };
 					rectLeft.y = (SCREEN_HEIGHT / 2) - (rectLeft.h / 2);
 
-					SDL_Rect rectCenterLeft = { (SCREEN_WIDTH / 4) + X_ALLOWANCE, 0, (SCREEN_WIDTH / 4) - (X_ALLOWANCE * 2), 50 };
-					rectCenterLeft.y = (SCREEN_HEIGHT / 2) - (rectCenterLeft.h / 2);
+					SDL_Rect centerLeft = { (SCREEN_WIDTH / 4) + X_ALLOWANCE, 0, (SCREEN_WIDTH / 4) - (X_ALLOWANCE * 2), 50 };
+					centerLeft.y = (SCREEN_HEIGHT / 2) - (centerLeft.h / 2);
 
-					std::string messageLeft = (*bot1Score == 10) ? "YOU WIN" : "YOU LOST";
-					std::string messageCenterLeft= (*player1Score == 10) ? "YOU WIN" : "YOU LOST";
+					std::string messageLeft = (*player1Score == 10) ? "YOU WIN" : "YOU LOST";
+					std::string messageRight = (*bot1Score == 10) ? "YOU WIN" : "YOU LOST";
 
 					text->loadFromRenderedText(gRenderer, messageLeft, &rectLeft);
-					text->loadFromRenderedText(gRenderer, messageCenterLeft, &rectCenterLeft);
+					text->loadFromRenderedText(gRenderer, messageRight, &centerLeft);
 				}
 
 
 				bool finished2 = *player2Score >= 10 || *bot2Score >= 10;
 
 				if (finished2) {
-					SDL_Rect rectCenterRight = { (SCREEN_WIDTH / 2) + X_ALLOWANCE, 0, (SCREEN_WIDTH / 4) - (X_ALLOWANCE * 2), 50 };
-					rectCenterRight.y = (SCREEN_HEIGHT / 2) - (rectCenterRight.h / 2);
 
-					SDL_Rect rectRight = { ((SCREEN_WIDTH / 4) * 3) + X_ALLOWANCE, 0, (SCREEN_WIDTH / 4) - (X_ALLOWANCE * 2), 50 };
-					rectRight.y = (SCREEN_HEIGHT / 2) - (rectRight.h / 2);
-
-					std::string messageCenterRight = (*player2Score == 10) ? "YOU WIN" : "YOU LOST";
-					std::string messageRight = (*bot2Score == 10) ? "YOU WIN" : "YOU LOST";
-
-					text->loadFromRenderedText(gRenderer, messageCenterRight, &rectCenterRight);
-					text->loadFromRenderedText(gRenderer, messageRight, &rectRight);
 				}
 			}
 		}

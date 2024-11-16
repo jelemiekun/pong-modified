@@ -55,6 +55,7 @@ private:
 	constexpr static uint8_t CURSOR_SPEED = 20;
 	constexpr static uint8_t OBJECTSPEED = 20;
 	constexpr static uint8_t PONG_SPEED = 10;
+	constexpr static Uint32 TIMER_DURATION = 500;
 
 private:
 	void initCursor();

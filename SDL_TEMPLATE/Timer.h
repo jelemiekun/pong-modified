@@ -3,8 +3,10 @@
 #include "SDL.h"
 
 class Timer {
+public:
+	static Uint32 COUNTDOWN_TIMER;
+
 private:
-	Uint32 COUNTDOWN_TIMER;
 	Uint32 copyTimer;
 	Uint32 startedTime;
 
@@ -16,7 +18,6 @@ public:
 	~Timer();
 
 public:
-	void setTimer(Uint16 time);
 	void startCountdown();
 	bool isFinish();
 };
