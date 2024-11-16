@@ -106,70 +106,9 @@ void Game::init() {
 
 void Game::initPaddlesAndCircle() {
 	Object::spriteSheet = TextureManager::loadTexure(gRenderer, "assets/spriteSheet.png");
-
-	int w;
-	int h;
-
-	SDL_QueryTexture(Object::spriteSheet, NULL, NULL, &w, &h);
-
-	// Initialize paddles
-	{
-		Paddle::SCREEN_HEIGHT = SCREEN_HEIGHT;
-
-		SDL_Rect* rectLeftPaddle = new SDL_Rect;
-		rectLeftPaddle->x = 0;
-		rectLeftPaddle->y = 0;
-		rectLeftPaddle->w = w / 4;
-		rectLeftPaddle->h = h;
-
-		SDL_Rect* rectRightPaddle = new SDL_Rect;
-		rectRightPaddle->x = w / 4;
-		rectRightPaddle->y = 0;
-		rectRightPaddle->w = w / 4;
-		rectRightPaddle->h = h;
-
-		leftPaddle = new Paddle;
-		centerLeftPaddle = new Paddle;
-		centerRightPaddle = new Paddle;
-		rightPaddle = new Paddle;
-
-		leftPaddle->init(rectLeftPaddle);
-		centerLeftPaddle->init(rectRightPaddle);
-		centerRightPaddle->init(rectLeftPaddle);
-		rightPaddle->init(rectRightPaddle);
-
-		delete rectLeftPaddle;
-		delete rectRightPaddle;
-	}
-
-	// Initialize pong
-	{
-		Pong::SCREEN_WIDTH = SCREEN_WIDTH;
-		Pong::SCREEN_HEIGHT = SCREEN_HEIGHT;
-
-		SDL_Rect* rectPong = new SDL_Rect;
-		rectPong->x = (w / 8) * 4;
-		rectPong->y = 0;
-		rectPong->w = w / 8;
-		rectPong->h = w / 4;
-
-		pong1 = new Pong;
-		pong2 = new Pong;
-
-		pong1->init(rectPong);
-		pong2->init(rectPong);
-
-		delete rectPong;
-	}
-
-	// Initialize pong timer
-	{
-		timerPong1 = new Timer;
-		timerPong1->setTimer(3500);
-
-		timerPong2 = new Timer;
-		timerPong2->setTimer(3500);
-	}
+	Paddle::SCREEN_HEIGHT = SCREEN_HEIGHT;
+	Pong::SCREEN_WIDTH = SCREEN_WIDTH;
+	Pong::SCREEN_HEIGHT = SCREEN_HEIGHT;
 }
 
 void Game::initCursor() {
@@ -254,47 +193,204 @@ void Game::drawCenterLines() {
 }
 
 void Game::initClassicGame() {
-	const int SCALE = 5;
-	const int ALLOWANCE = 50;
+	// Initialize resources
+	{
+		int w;
+		int h;
 
-	leftPaddle->scaleDstRect(SCALE);
-	leftPaddle->xPos(ALLOWANCE);
-	leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+		SDL_QueryTexture(Object::spriteSheet, NULL, NULL, &w, &h);
 
-	rightPaddle->scaleDstRect(SCALE);
-	rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
-	rightPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+		// Initialize paddles
+		{
+			Paddle::SCREEN_HEIGHT = SCREEN_HEIGHT;
 
-	pong1->scaleDstRect(SCALE / 2);
+			SDL_Rect* rectLeftPaddle = new SDL_Rect;
+			rectLeftPaddle->x = 0;
+			rectLeftPaddle->y = 0;
+			rectLeftPaddle->w = w / 4;
+			rectLeftPaddle->h = h;
 
-	Pong::isClassic = true;
+			SDL_Rect* rectRightPaddle = new SDL_Rect;
+			rectRightPaddle->x = w / 4;
+			rectRightPaddle->y = 0;
+			rectRightPaddle->w = w / 4;
+			rectRightPaddle->h = h;
+
+			leftPaddle = new Paddle;
+			rightPaddle = new Paddle;
+
+			leftPaddle->init(rectLeftPaddle);
+			rightPaddle->init(rectRightPaddle);
+
+			delete rectLeftPaddle;
+			delete rectRightPaddle;
+		}
+
+		// Initialize pong
+		{
+			SDL_Rect* rectPong = new SDL_Rect;
+			rectPong->x = (w / 8) * 4;
+			rectPong->y = 0;
+			rectPong->w = w / 8;
+			rectPong->h = w / 4;
+
+			pong1 = new Pong;
+
+			pong1->init(rectPong);
+
+			delete rectPong;
+		}
+
+		// Initialize pong timer
+		{
+			timerPong1 = new Timer;
+			timerPong1->setTimer(3500);
+		}
+	}
+
+	// Initialize size and positions
+	{
+		const int SCALE = 5;
+		const int ALLOWANCE = 50;
+
+		leftPaddle->scaleDstRect(SCALE);
+		leftPaddle->xPos(ALLOWANCE);
+		leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+
+		rightPaddle->scaleDstRect(SCALE);
+		rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
+		rightPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+
+		pong1->scaleDstRect(SCALE / 2);
+
+		Pong::isClassic = true;
+	}
 }
 
 void Game::initDoubleEnemyOrPaddleGame() {
-	const int SCALE = 2;
-	const int ALLOWANCE = 20;
+	// Initialize resources
+	{
+		int w;
+		int h;
 
-	leftPaddle->scaleDstRect(SCALE);
-	leftPaddle->xPos(ALLOWANCE);
-	leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+		SDL_QueryTexture(Object::spriteSheet, NULL, NULL, &w, &h);
 
-	centerLeftPaddle->scaleDstRect(SCALE);
-	centerLeftPaddle->xPos((SCREEN_WIDTH / 2) - centerLeftPaddle->w() - ALLOWANCE);
-	centerLeftPaddle->yPos((SCREEN_HEIGHT / 2) - (centerLeftPaddle->h() / 2));
+		// Initialize paddles
+		{
+			SDL_Rect* rectLeftPaddle = new SDL_Rect;
+			rectLeftPaddle->x = 0;
+			rectLeftPaddle->y = 0;
+			rectLeftPaddle->w = w / 4;
+			rectLeftPaddle->h = h;
 
-	centerRightPaddle->scaleDstRect(SCALE);
-	centerRightPaddle->xPos((SCREEN_WIDTH / 2) + ALLOWANCE);
-	centerRightPaddle->yPos((SCREEN_HEIGHT / 2) - (centerLeftPaddle->h() / 2));
+			SDL_Rect* rectRightPaddle = new SDL_Rect;
+			rectRightPaddle->x = w / 4;
+			rectRightPaddle->y = 0;
+			rectRightPaddle->w = w / 4;
+			rectRightPaddle->h = h;
 
-	rightPaddle->scaleDstRect(SCALE);
-	rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
-	rightPaddle->yPos((SCREEN_HEIGHT / 2) - (rightPaddle->h() / 2));
+			leftPaddle = new Paddle;
+			centerLeftPaddle = new Paddle;
+			centerRightPaddle = new Paddle;
+			rightPaddle = new Paddle;
 
-	pong1->scaleDstRect(SCALE / 2);
+			leftPaddle->init(rectLeftPaddle);
+			centerLeftPaddle->init(rectRightPaddle);
+			centerRightPaddle->init(rectLeftPaddle);
+			rightPaddle->init(rectRightPaddle);
 
-	pong2->scaleDstRect(SCALE / 2);
+			delete rectLeftPaddle;
+			delete rectRightPaddle;
+		}
 
-	Pong::isClassic = false;
+		// Initialize pong
+		{
+			SDL_Rect* rectPong = new SDL_Rect;
+			rectPong->x = (w / 8) * 4;
+			rectPong->y = 0;
+			rectPong->w = w / 8;
+			rectPong->h = w / 4;
+
+			pong1 = new Pong;
+			pong2 = new Pong;
+
+			pong1->init(rectPong);
+			pong2->init(rectPong);
+
+			delete rectPong;
+		}
+
+		// Initialize pong timer
+		{
+			timerPong1 = new Timer;
+			timerPong1->setTimer(3500);
+
+			timerPong2 = new Timer;
+			timerPong2->setTimer(3500);
+		}
+	}
+
+	// Initialize size and positions
+	{
+		const int SCALE = 2;
+		const int ALLOWANCE = 20;
+
+		leftPaddle->scaleDstRect(SCALE);
+		leftPaddle->xPos(ALLOWANCE);
+		leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+
+		centerLeftPaddle->scaleDstRect(SCALE);
+		centerLeftPaddle->xPos((SCREEN_WIDTH / 2) - centerLeftPaddle->w() - ALLOWANCE);
+		centerLeftPaddle->yPos((SCREEN_HEIGHT / 2) - (centerLeftPaddle->h() / 2));
+
+		centerRightPaddle->scaleDstRect(SCALE);
+		centerRightPaddle->xPos((SCREEN_WIDTH / 2) + ALLOWANCE);
+		centerRightPaddle->yPos((SCREEN_HEIGHT / 2) - (centerLeftPaddle->h() / 2));
+
+		rightPaddle->scaleDstRect(SCALE);
+		rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
+		rightPaddle->yPos((SCREEN_HEIGHT / 2) - (rightPaddle->h() / 2));
+
+		pong1->scaleDstRect(SCALE / 2);
+
+		pong2->scaleDstRect(SCALE / 2);
+
+		Pong::isClassic = false;
+	}
+}
+
+void Game::freeGameResources() {
+	delete leftPaddle;
+	delete centerLeftPaddle;
+	delete centerRightPaddle;
+	delete rightPaddle;
+
+	delete player1Score;
+	delete player2Score;
+	delete bot1Score;
+	delete bot2Score;
+
+	delete pong1;
+	delete pong2;
+
+	delete timerPong1;
+	delete timerPong2;
+
+	leftPaddle = nullptr;
+	centerLeftPaddle = nullptr;
+	centerRightPaddle = nullptr;
+	rightPaddle = nullptr;
+
+	player1Score = nullptr;
+	player2Score = nullptr;
+	bot1Score = nullptr;
+	bot2Score = nullptr;
+
+	pong1 = nullptr;
+	pong2 = nullptr;
+
+	timerPong1 = nullptr;
+	timerPong2 = nullptr;
 }
 
 void Game::input() {
@@ -348,6 +444,7 @@ void Game::input() {
 			// If playing
 			if (flags->inPlaying) {
 				if ((gEvent.type == SDL_KEYDOWN) && (gEvent.key.keysym.sym == SDLK_ESCAPE)) {
+					freeGameResources();
 					resetFlags();
 				}
 

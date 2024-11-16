@@ -29,6 +29,11 @@ private:
 	Paddle* centerRightPaddle;
 	Paddle* rightPaddle;
 
+	uint8_t* player1Score;
+	uint8_t* player2Score;
+	uint8_t* bot1Score;
+	uint8_t* bot2Score;
+
 	Pong* pong1;
 	Pong* pong2;
 
@@ -43,10 +48,6 @@ private:
 	bool acceptKeyboardInput;
 	bool running;
 
-	uint8_t* player1Score;
-	uint8_t* player2Score;
-	uint8_t* bot1Score;
-	uint8_t* bot2Score;
 
 private:
 	constexpr static int SCREEN_WIDTH = 1080;
@@ -62,6 +63,7 @@ private:
 	void drawCenterLines();
 	void initClassicGame();
 	void initDoubleEnemyOrPaddleGame();
+	void freeGameResources();
 
 
 
