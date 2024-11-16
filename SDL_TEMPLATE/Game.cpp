@@ -198,6 +198,9 @@ void Game::resetFlags() {
 	flags->dirDL = 0;
 	flags->dirD = 0;
 	flags->dirDR = 0;
+
+	flags->dirUP2 = 0;
+	flags->dirDP2 = 0;
 }
 
 void Game::drawCenterLine() {
@@ -283,14 +286,14 @@ void Game::input() {
 						currentController->inputXYDir();
 
 						flags->dirR = currentController->controllerAngle >= -22.5 && currentController->controllerAngle < 22.5;
-						flags->dirUR = currentController->controllerAngle >= 22.5 && currentController->controllerAngle < 67.5;  // Upper Right
-						flags->dirU = currentController->controllerAngle >= 67.5 && currentController->controllerAngle < 112.5;  // Up
-						flags->dirUL = currentController->controllerAngle >= 112.5 && currentController->controllerAngle < 157.5;  // Upper Left
+						flags->dirUR = currentController->controllerAngle >= 22.5 && currentController->controllerAngle < 67.5;
+						flags->dirU = currentController->controllerAngle >= 67.5 && currentController->controllerAngle < 112.5;
+						flags->dirUL = currentController->controllerAngle >= 112.5 && currentController->controllerAngle < 157.5;
 						flags->dirL = ((currentController->controllerAngle >= 157.5 && currentController->controllerAngle <= 180) 
-							|| (currentController->controllerAngle >= -180 && currentController->controllerAngle < -157.5)); // Left
-						flags->dirDL = currentController->controllerAngle >= -157.5 && currentController->controllerAngle < -112.5; // Down Left
-						flags->dirD = currentController->controllerAngle >= -112.5 && currentController->controllerAngle < -67.5; // Down
-						flags->dirDR = currentController->controllerAngle >= -67.5 && currentController->controllerAngle < -22.5; // Down Right
+							|| (currentController->controllerAngle >= -180 && currentController->controllerAngle < -157.5));
+						flags->dirDL = currentController->controllerAngle >= -157.5 && currentController->controllerAngle < -112.5;
+						flags->dirD = currentController->controllerAngle >= -112.5 && currentController->controllerAngle < -67.5;
+						flags->dirDR = currentController->controllerAngle >= -67.5 && currentController->controllerAngle < -22.5;
 						break;
 					case SDL_CONTROLLERBUTTONDOWN:
 						if (gEvent.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
@@ -305,19 +308,39 @@ void Game::input() {
 
 			// If playing
 			if (flags->inPlaying) {
-				// If in classic
-				if (flags->isClassic) {
-					switch (gEvent.type) {
-					case SDL_CONTROLLERBUTTONDOWN:
-						break;
-					default:
-						break;
-					}
+
+				if (gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERAXISMOTION) {
+					gGameController1->inputXYDir();
+
+					flags->dirU = gGameController1->controllerAngle >= 67.5 && gGameController1->controllerAngle < 112.5;
+					flags->dirD = gGameController1->controllerAngle >= -112.5 && gGameController1->controllerAngle < -67.5;
+				} else if ((gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP) && gGameController1 == nullptr) {
+					// Handle key 'w' events
+					if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 1;
+					if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 0;
+
+					// Handle key 's' events
+					if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 1;
+					if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 0;
 				}
 
 				// If in double paddle or double enemy
-				if (flags->isDoubleEnemy || flags->isDoublePaddle) {
+				if (flags->isTwoPlayer && (flags->isDoubleEnemy || flags->isDoublePaddle)) {
+					if (gGameController2 != nullptr && gEvent.type == SDL_CONTROLLERAXISMOTION) {
+						gGameController2->inputXYDir();
 
+						flags->dirUP2 = gGameController2->controllerAngle >= 67.5 && gGameController2->controllerAngle < 112.5;
+						flags->dirDP2 = gGameController2->controllerAngle >= -112.5 && gGameController2->controllerAngle < -67.5;
+					} else if (gGameController2 != nullptr && (gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP)) {
+						// Handle key 'w' events
+						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_UP) flags->dirU = 1;
+						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_UP) flags->dirU = 0;
+
+						// Handle key 's' events
+						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirD = 1;
+						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirD = 0;
+
+					}
 				}
 			}
 		}
@@ -325,6 +348,7 @@ void Game::input() {
 }
 
 void Game::update() {
+	// If in start menu
 	if (flags->inStart) {
 		int mouseX;
 		int mouseY;
@@ -393,6 +417,28 @@ void Game::update() {
 			if (flags->dirDL) SDL_WarpMouseInWindow(gWindow, mouseX - movement, mouseY + movement);
 			if (flags->dirD) SDL_WarpMouseInWindow(gWindow, mouseX, mouseY + movement);
 			if (flags->dirDR) SDL_WarpMouseInWindow(gWindow, mouseX + movement, mouseY + movement);
+		}
+	}
+
+	// If playing
+	if (flags->inPlaying) {
+		// If classic
+		if (flags->isClassic) {
+			// Player one
+			int velocityP1 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
+			
+			if (flags->dirU) leftPaddle->move(true, velocityP1);
+			if (flags->dirD) leftPaddle->move(false, velocityP1);
+
+			// Player two
+			if (flags->isTwoPlayer) {
+				int velocityP2 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
+
+				if (flags->dirU) rightPaddle->move(true, velocityP2);
+				if (flags->dirD) rightPaddle->move(false, velocityP2);
+			} else {
+
+			}
 		}
 	}
 }

@@ -42,6 +42,7 @@ private:
 	constexpr static int SCREEN_WIDTH = 1080;
 	constexpr static int SCREEN_HEIGHT = 720;
 	constexpr static uint8_t CURSOR_SPEED = 20;
+	constexpr static uint8_t OBJECTSPEED = 20;
 
 private:
 	void initCursor();

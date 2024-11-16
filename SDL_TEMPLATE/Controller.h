@@ -26,7 +26,6 @@ public:
 
 	SDL_GameController* getGameController() const;
 	void setGameController(SDL_GameController* controller);
-	int getLeftYDir() const;
 	const bool& isControllerNullptr() const;
 };
 

@@ -20,4 +20,7 @@ struct GameFlags {
 	unsigned int dirDL : 1;
 	unsigned int dirD : 1;
 	unsigned int dirDR : 1;
+
+	unsigned int dirUP2 : 1;
+	unsigned int dirDP2 : 1;
 };

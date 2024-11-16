@@ -5,5 +5,7 @@ class Paddle : public Object {
 public:
 	Paddle();
 	~Paddle();
+
+	void moveOnOwn();
 };
 
