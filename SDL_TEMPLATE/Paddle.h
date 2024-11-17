@@ -3,13 +3,14 @@
 
 class Paddle : public Object {
 public:
-	static uint16_t SCREEN_HEIGHT;
+	SDL_Rect colliders[3];
 
 public:
 	Paddle();
 	~Paddle();
 
-	void move(const bool& isUp, const int& velocity) override;
-	void moveOnOwn();
+	void scaleColliders(const double& scale) override;
+	void move(const bool& isUp, const int& velocity);
+	void moveColliders(const bool& isUp, const int& velocityY, const int& velocityX = 0) override;
+	void moveOnOwn(const int &limit, const bool &isRight,const int& pongXpos, const int &pongYpos, const int& velocity);
 };
-

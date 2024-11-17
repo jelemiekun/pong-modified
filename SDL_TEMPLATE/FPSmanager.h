@@ -1,7 +1,7 @@
 #pragma once
 #include "SDL.h"
 
-constexpr static Uint8 FPS = 60;
+constexpr static Uint8 FPS = 150;
 constexpr static float FRAME_DURATION = 1000.0F / FPS;
 
 namespace FPSmanager {

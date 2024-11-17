@@ -110,9 +110,8 @@ void Game::init() {
 
 void Game::initPaddlesAndCircle() {
 	Object::spriteSheet = TextureManager::loadTexure(gRenderer, "assets/spriteSheet.png");
-	Paddle::SCREEN_HEIGHT = SCREEN_HEIGHT;
-	Pong::SCREEN_WIDTH = SCREEN_WIDTH;
-	Pong::SCREEN_HEIGHT = SCREEN_HEIGHT;
+	Object::SCREEN_WIDTH = SCREEN_WIDTH;
+	Object::SCREEN_HEIGHT = SCREEN_HEIGHT;
 	Timer::COUNTDOWN_TIMER = TIMER_DURATION;
 }
 
@@ -227,6 +226,15 @@ void Game::initClassicGame() {
 			leftPaddle->init(rectLeftPaddle);
 			rightPaddle->init(rectRightPaddle);
 
+
+			leftPaddle->colliders[0] = { 0, 0, w / 4, h / 16 };
+			leftPaddle->colliders[1] = { 0, 0, w / 32, h };
+			leftPaddle->colliders[2] = { 0, 0, w / 4, h / 16 };
+
+			rightPaddle->colliders[0] = { 0, 0, w / 4, h / 16 };
+			rightPaddle->colliders[1] = { 0, 0, w / 32, h };
+			rightPaddle->colliders[2] = { 0, 0, w / 4, h / 16 };
+
 			delete rectLeftPaddle;
 			delete rectRightPaddle;
 		}
@@ -242,6 +250,9 @@ void Game::initClassicGame() {
 			pong1 = new Pong;
 
 			pong1->init(rectPong);
+
+			pong1->colliders[0] = { 0, 0, w / 16, h / 4 };
+			pong1->colliders[1] = { 0, 0, w / 8, h / 8 };
 
 			delete rectPong;
 		}
@@ -263,20 +274,45 @@ void Game::initClassicGame() {
 
 	// Initialize size and positions
 	{
-		const int SCALE = 5;
 		const int ALLOWANCE = 50;
+		{
+			leftPaddle->scaleDstRect(CLASSIC_SCALE);
+			leftPaddle->xPos(ALLOWANCE);
+			leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
 
-		leftPaddle->scaleDstRect(SCALE);
-		leftPaddle->xPos(ALLOWANCE);
-		leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
 
-		rightPaddle->scaleDstRect(SCALE);
-		rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
-		rightPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+			leftPaddle->scaleColliders(CLASSIC_SCALE);
+			leftPaddle->colliders[0].x = leftPaddle->xPos();
+			leftPaddle->colliders[0].y = leftPaddle->yPos();
 
-		pong1->scaleDstRect(SCALE / 2);
+			leftPaddle->colliders[1].x = leftPaddle->xPos();
+			leftPaddle->colliders[1].y = leftPaddle->yPos();
 
-		Pong::isClassic = true;
+			leftPaddle->colliders[2].x = leftPaddle->xPos();
+			leftPaddle->colliders[2].y = leftPaddle->yPos() + (CLASSIC_SCALE * 15);
+		}
+
+		{
+			rightPaddle->scaleDstRect(CLASSIC_SCALE);
+			rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
+			rightPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
+
+			rightPaddle->scaleColliders(CLASSIC_SCALE);
+			rightPaddle->colliders[0].x = rightPaddle->xPos();
+			rightPaddle->colliders[0].y = rightPaddle->yPos();
+
+			rightPaddle->colliders[1].x = rightPaddle->xPos() + (CLASSIC_SCALE * 7);
+			rightPaddle->colliders[1].y = rightPaddle->yPos();
+
+			rightPaddle->colliders[2].x = rightPaddle->xPos();
+			rightPaddle->colliders[2].y = rightPaddle->yPos() + (CLASSIC_SCALE * 15);
+		}
+
+		{
+			pong1->scaleDstRect(static_cast<double>(CLASSIC_SCALE / 2));
+			pong1->scaleColliders(CLASSIC_SCALE / 2);
+			Pong::isClassic = true;
+		}
 	}
 }
 
@@ -312,6 +348,22 @@ void Game::initDoubleEnemyOrPaddleGame() {
 			centerRightPaddle->init(rectLeftPaddle);
 			rightPaddle->init(rectRightPaddle);
 
+			leftPaddle->colliders[0] = { 0, 0, w / 4, h / 16 };
+			leftPaddle->colliders[1] = { 0, 0, w / 32, h };
+			leftPaddle->colliders[2] = { 0, 0, w / 4, h / 16 };
+
+			centerLeftPaddle->colliders[0] = { 0, 0, w / 4, h / 16 };
+			centerLeftPaddle->colliders[1] = { 0, 0, w / 32, h };
+			centerLeftPaddle->colliders[2] = { 0, 0, w / 4, h / 16 };
+
+			centerRightPaddle->colliders[0] = { 0, 0, w / 4, h / 16 };
+			centerRightPaddle->colliders[1] = { 0, 0, w / 32, h };
+			centerRightPaddle->colliders[2] = { 0, 0, w / 4, h / 16 };
+
+			rightPaddle->colliders[0] = { 0, 0, w / 4, h / 16 };
+			rightPaddle->colliders[1] = { 0, 0, w / 32, h };
+			rightPaddle->colliders[2] = { 0, 0, w / 4, h / 16 };
+
 			delete rectLeftPaddle;
 			delete rectRightPaddle;
 		}
@@ -329,6 +381,12 @@ void Game::initDoubleEnemyOrPaddleGame() {
 
 			pong1->init(rectPong);
 			pong2->init(rectPong);
+
+			pong1->colliders[0] = { 0, 0, w / 16, h / 4 };
+			pong1->colliders[1] = { 0, 0, w / 8, h / 8 };
+
+			pong2->colliders[0] = { 0, 0, w / 16, h / 4 };
+			pong2->colliders[1] = { 0, 0, w / 8, h / 8 };
 
 			delete rectPong;
 		}
@@ -358,30 +416,81 @@ void Game::initDoubleEnemyOrPaddleGame() {
 
 	// Initialize size and positions
 	{
-		const int SCALE = 2;
 		const int ALLOWANCE = 20;
 
-		leftPaddle->scaleDstRect(SCALE);
-		leftPaddle->xPos(ALLOWANCE);
-		leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
 
-		centerLeftPaddle->scaleDstRect(SCALE);
-		centerLeftPaddle->xPos((SCREEN_WIDTH / 2) - centerLeftPaddle->w() - ALLOWANCE);
-		centerLeftPaddle->yPos((SCREEN_HEIGHT / 2) - (centerLeftPaddle->h() / 2));
+		//SGHYSJKGHJFDHGFD SCALE DITO AND SET COLLIDERS
+		{
+			leftPaddle->scaleDstRect(NOT_CLASSIC_SCALE);
+			leftPaddle->xPos(ALLOWANCE);
+			leftPaddle->yPos((SCREEN_HEIGHT / 2) - (leftPaddle->h() / 2));
 
-		centerRightPaddle->scaleDstRect(SCALE);
-		centerRightPaddle->xPos((SCREEN_WIDTH / 2) + ALLOWANCE);
-		centerRightPaddle->yPos((SCREEN_HEIGHT / 2) - (centerLeftPaddle->h() / 2));
+			leftPaddle->scaleColliders(NOT_CLASSIC_SCALE);
+			leftPaddle->colliders[0].x = leftPaddle->xPos();
+			leftPaddle->colliders[0].y = leftPaddle->yPos();
 
-		rightPaddle->scaleDstRect(SCALE);
-		rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
-		rightPaddle->yPos((SCREEN_HEIGHT / 2) - (rightPaddle->h() / 2));
+			leftPaddle->colliders[1].x = leftPaddle->xPos();
+			leftPaddle->colliders[1].y = leftPaddle->yPos();
 
-		pong1->scaleDstRect(SCALE / 2);
+			leftPaddle->colliders[2].x = leftPaddle->xPos();
+			leftPaddle->colliders[2].y = leftPaddle->yPos() + (NOT_CLASSIC_SCALE * 15);
+		}
+		
+		{
+			centerLeftPaddle->scaleDstRect(NOT_CLASSIC_SCALE);
+			centerLeftPaddle->xPos((SCREEN_WIDTH / 2) - centerLeftPaddle->w() - ALLOWANCE);
+			centerLeftPaddle->yPos((SCREEN_HEIGHT / 2) - (centerLeftPaddle->h() / 2));
 
-		pong2->scaleDstRect(SCALE / 2);
+			centerLeftPaddle->scaleColliders(NOT_CLASSIC_SCALE);
+			centerLeftPaddle->colliders[0].x = centerLeftPaddle->xPos();
+			centerLeftPaddle->colliders[0].y = centerLeftPaddle->yPos();
 
-		Pong::isClassic = false;
+			centerLeftPaddle->colliders[1].x = centerLeftPaddle->xPos() + (NOT_CLASSIC_SCALE * 7);
+			centerLeftPaddle->colliders[1].y = centerLeftPaddle->yPos();
+
+			centerLeftPaddle->colliders[2].x = centerLeftPaddle->xPos();
+			centerLeftPaddle->colliders[2].y = centerLeftPaddle->yPos() + (NOT_CLASSIC_SCALE * 15);
+		}
+
+		{
+			centerRightPaddle->scaleDstRect(NOT_CLASSIC_SCALE);
+			centerRightPaddle->xPos((SCREEN_WIDTH / 2) + ALLOWANCE);
+			centerRightPaddle->yPos((SCREEN_HEIGHT / 2) - (centerRightPaddle->h() / 2));
+
+			centerRightPaddle->scaleColliders(NOT_CLASSIC_SCALE);
+			centerRightPaddle->colliders[0].x = centerRightPaddle->xPos();
+			centerRightPaddle->colliders[0].y = centerRightPaddle->yPos();
+
+			centerRightPaddle->colliders[1].x = centerRightPaddle->xPos();
+			centerRightPaddle->colliders[1].y = centerRightPaddle->yPos();
+
+			centerRightPaddle->colliders[2].x = centerRightPaddle->xPos();
+			centerRightPaddle->colliders[2].y = centerRightPaddle->yPos() + (NOT_CLASSIC_SCALE * 15);
+		}
+
+		{
+			rightPaddle->scaleDstRect(NOT_CLASSIC_SCALE);
+			rightPaddle->xPos(SCREEN_WIDTH - (rightPaddle->xPos() + rightPaddle->w()) - ALLOWANCE);
+			rightPaddle->yPos((SCREEN_HEIGHT / 2) - (rightPaddle->h() / 2));
+
+			rightPaddle->scaleColliders(NOT_CLASSIC_SCALE);
+			rightPaddle->colliders[0].x = rightPaddle->xPos();
+			rightPaddle->colliders[0].y = rightPaddle->yPos();
+
+			rightPaddle->colliders[1].x = rightPaddle->xPos() + (NOT_CLASSIC_SCALE * 7);
+			rightPaddle->colliders[1].y = rightPaddle->yPos();
+
+			rightPaddle->colliders[2].x = rightPaddle->xPos();
+			rightPaddle->colliders[2].y = rightPaddle->yPos() + (NOT_CLASSIC_SCALE * 15);
+		}
+
+		{
+			pong1->scaleDstRect(static_cast<double>(NOT_CLASSIC_SCALE / 2));
+			pong2->scaleDstRect(static_cast<double>(NOT_CLASSIC_SCALE / 2));
+			pong1->scaleColliders(NOT_CLASSIC_SCALE / 2);
+			pong2->scaleColliders(NOT_CLASSIC_SCALE / 2);
+			Pong::isClassic = false;
+		}
 	}
 }
 
@@ -598,13 +707,13 @@ void Game::update() {
 					if (flags->dirUP2) rightPaddle->move(true, velocityP2);
 					if (flags->dirDP2) rightPaddle->move(false, velocityP2);
 				} else { // Move the paddle on its own if two players are not playing
-					rightPaddle->moveOnOwn();
+					rightPaddle->moveOnOwn(SCREEN_WIDTH / 2,true, pong1->xPos(), pong1->yPos(), OBJECTSPEED);
 				}
 			}
 
 			if (flags->isDoubleEnemy || flags->isDoublePaddle) {
 				// Handle input player one
-				int velocityP1 = (gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude;
+				int velocityP1 = ((gGameController1 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController1->magnitude) / 2;
 
 				// Move the center left paddle
 				if (flags->dirU) centerLeftPaddle->move(true, velocityP1);
@@ -618,15 +727,15 @@ void Game::update() {
 
 				// If double paddle, handle second input
 				if (flags->isDoublePaddle) {
-					int velocityP2 = (gGameController2 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController2->magnitude;
+					int velocityP2 = ((gGameController2 == nullptr) ? OBJECTSPEED : OBJECTSPEED * gGameController2->magnitude) / 2;
 
 					if (flags->dirUP2) centerRightPaddle->move(true, velocityP2);
 					if (flags->dirDP2) centerRightPaddle->move(false, velocityP2);
 				}
 
 				// Then move on own the left and right paddle
-				leftPaddle->moveOnOwn();
-				rightPaddle->moveOnOwn();
+				leftPaddle->moveOnOwn(SCREEN_WIDTH / 4, false, pong1->xPos(), pong1->yPos(), OBJECTSPEED);
+				rightPaddle->moveOnOwn((SCREEN_WIDTH / 4) * 3, true, pong2->xPos(), pong2->yPos(), OBJECTSPEED);
 			}
 		}
 		
@@ -644,9 +753,13 @@ void Game::update() {
 
 				timerPong1->startCountdown();
 			} else if (!pong1->spawned && timerPong1->started && timerPong1->isFinish() && !finished1) {
-				pong1->spawn(true);
+				uint8_t SCALE = flags->isClassic ? CLASSIC_SCALE : NOT_CLASSIC_SCALE;
+				pong1->spawn(true, SCALE / 2);
 			} else if (pong1->spawned) {
-				pong1->move(true, PONG_SPEED);
+				if (flags->isClassic) pong1->move(true, PONG_SPEED, leftPaddle, rightPaddle);
+
+				if (flags->isDoubleEnemy || flags->isDoublePaddle) 
+					pong1->move(true, PONG_SPEED / 2, leftPaddle, centerLeftPaddle);
 			}
 
 			// If double enemy or double paddle, update also the second pong
@@ -664,9 +777,9 @@ void Game::update() {
 
 					timerPong2->startCountdown();
 				} else if (!pong2->spawned && timerPong2->started && timerPong2->isFinish() && !finished2) {
-					pong2->spawn(false);
+					pong2->spawn(false, NOT_CLASSIC_SCALE / 2);
 				} else if (pong2->spawned) {
-					pong2->move(false, PONG_SPEED);
+					pong2->move(false, PONG_SPEED / 2, centerRightPaddle, rightPaddle);
 				}
 			}
 		}
@@ -796,12 +909,14 @@ void Game::render() {
 
 	if (flags->inPlaying) {
 		SDL_ShowCursor(SDL_DISABLE);
+
 		// Render paddles
 		{
 			// Render left and right paddles, and center line
 			drawCenterLines();
 			leftPaddle->render();
 			rightPaddle->render();
+
 
 			// Render additional center paddles if double gameplay is chosen
 			if (flags->isDoubleEnemy || flags->isDoublePaddle) {

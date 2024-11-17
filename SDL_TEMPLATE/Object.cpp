@@ -4,6 +4,9 @@
 SDL_Texture* Object::spriteSheet = nullptr;
 SDL_Renderer* Object::renderer = nullptr;
 
+uint16_t Object::SCREEN_WIDTH = 0;
+uint16_t Object::SCREEN_HEIGHT = 0;
+
 Object::Object() : srcRect(nullptr), dstRect(nullptr) {}
 
 Object::~Object() {

@@ -1,11 +1,10 @@
 #pragma once
 
 #include "Object.h"
+#include "Paddle.h"
 
 class Pong : public Object {
 public:
-	static uint16_t SCREEN_WIDTH;
-	static uint16_t SCREEN_HEIGHT;
 	static bool isClassic;
 
 private:
@@ -24,12 +23,15 @@ public:
 	bool spawned;
 	bool scored;
 	bool playerScored;
+	SDL_Rect colliders[2];
 
 public:
 	Pong();
 	~Pong();
 
-	void move(const bool& isUp, const int& velocity) override;
-	void spawn(const bool& isUpOrIsLeft);
+	void scaleColliders(const double& scale) override;
+	void move(const bool& isLeft, const int& velocity, Paddle*& paddleLeft, Paddle*& paddleRight);
+	void moveColliders(const bool& isUp, const int& velocityX, const int& velocityY = 0) override;
+	void spawn(const bool& isUpOrIsLeft, const int& SCALE);
 };
 
