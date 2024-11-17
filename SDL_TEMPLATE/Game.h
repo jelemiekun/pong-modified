@@ -4,6 +4,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
+#include "SDL_mixer.h"
 
 #include "GameFlags.h"
 #include "Text.h"
@@ -12,6 +13,7 @@
 #include "Paddle.h"
 #include "Pong.h"
 #include "Timer.h"
+#include "SFX.h"
 
 class Game {
 private:
@@ -43,6 +45,8 @@ private:
 	GameFlags* flags;
 	
 	TTF_Font* gFont;
+
+	SFX* sfx;
 	
 	Text* text;
 	bool acceptKeyboardInput;

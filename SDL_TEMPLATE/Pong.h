@@ -20,6 +20,9 @@ private:
 	int PongyPos;
 
 public:
+	bool collidedBorder;
+	bool collidedPaddle;
+
 	bool spawned;
 	bool scored;
 	bool playerScored;

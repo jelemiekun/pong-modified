@@ -26,6 +26,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Paddle.cpp" />
     <ClCompile Include="Pong.cpp" />
+    <ClCompile Include="SFX.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -41,6 +42,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="Paddle.h" />
     <ClInclude Include="Pong.h" />
+    <ClInclude Include="SFX.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Timer.h" />

@@ -3,7 +3,8 @@
 #include <iostream>
 
 Pong::Pong() : Object(), dirX(DIRECTIONS::NONE), dirY(DIRECTIONS::NONE),
-            spawned(false), scored(false), playerScored(false) {}
+            spawned(false), scored(false), playerScored(false),
+            collidedBorder(false), collidedPaddle(false) {}
 
 Pong::~Pong() {}
 
@@ -60,6 +61,8 @@ void Pong::move(const bool& isLeft, const int& velocity, Paddle*& paddleLeft, Pa
         if ((dstRect->y < 0) || (dstRect->y + dstRect->h > SCREEN_HEIGHT)) {
             if (dirY == DIRECTIONS::POSITIVE) dirY = DIRECTIONS::NEGATIVE;
             else if (dirY == DIRECTIONS::NEGATIVE) dirY = DIRECTIONS::POSITIVE;
+
+            collidedBorder = true;
         }
 
         if (isClassic) {
@@ -148,6 +151,7 @@ void Pong::move(const bool& isLeft, const int& velocity, Paddle*& paddleLeft, Pa
                     if (leftA > rightB) continue;
 
                     collided = true;
+                    collidedPaddle = true;
 
                     // Determine which side of the paddle was hit
                     if (rightA > leftB && leftA < leftB) {
@@ -184,6 +188,7 @@ void Pong::move(const bool& isLeft, const int& velocity, Paddle*& paddleLeft, Pa
                         if (leftA > rightB) continue;
 
                         collided = true;
+                        collidedPaddle = true;
 
                         // Determine which side of the paddle was hit
                         if (rightA > leftB && leftA < leftB) {

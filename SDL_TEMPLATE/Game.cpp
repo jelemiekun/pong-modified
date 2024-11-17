@@ -46,6 +46,16 @@ void Game::init() {
 		std::cout << "SDL_Image initialized." << '\n';
 	}
 
+
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+		std::cout << "SDL_Mixer could not initialize: " << Mix_GetError() << '\n';
+	} else {
+		std::cout << "SDL_Mixer initialized." << '\n';
+	}
+
+	sfx = new SFX;
+	sfx->initSFXs();
+	
 	initPaddlesAndCircle();
 
 	int numControllers = SDL_NumJoysticks();
@@ -745,6 +755,8 @@ void Game::update() {
 			if (!pong1->spawned && !timerPong1->started && !finished1) {
 				// Check if who scored
 				if (pong1->scored) {
+					sfx->playSFX(SOUNDS::scored);
+
 					if (pong1->playerScored) *player1Score +=  1;
 					else *bot1Score += 1;
 
@@ -760,6 +772,16 @@ void Game::update() {
 
 				if (flags->isDoubleEnemy || flags->isDoublePaddle) 
 					pong1->move(true, PONG_SPEED / 2, leftPaddle, centerLeftPaddle);
+
+				if (pong1->collidedBorder) {
+					sfx->playSFX(SOUNDS::border);
+					pong1->collidedBorder = 0;
+				}
+
+				if (pong1->collidedPaddle) {
+					sfx->playSFX(SOUNDS::paddle);
+					pong1->collidedPaddle = 0;
+				}
 			}
 
 			// If double enemy or double paddle, update also the second pong
@@ -769,6 +791,8 @@ void Game::update() {
 				if (!pong2->spawned && !timerPong2->started && !finished2) {
 					// Check if who scored
 					if (pong2->scored) {
+						sfx->playSFX(SOUNDS::scored);
+
 						if (pong2->playerScored) *player2Score += 1;
 						else *bot2Score += 1;
 
@@ -780,6 +804,16 @@ void Game::update() {
 					pong2->spawn(false, NOT_CLASSIC_SCALE / 2);
 				} else if (pong2->spawned) {
 					pong2->move(false, PONG_SPEED / 2, centerRightPaddle, rightPaddle);
+
+					if (pong2->collidedBorder) {
+						sfx->playSFX(SOUNDS::border);
+						pong2->collidedBorder = 0;
+					}
+
+					if (pong2->collidedPaddle) {
+						sfx->playSFX(SOUNDS::paddle);
+						pong2->collidedPaddle = 0;
+					}
 				}
 			}
 		}
