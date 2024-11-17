@@ -51,6 +51,7 @@ private:
 	Text* text;
 	bool acceptKeyboardInput;
 	bool running;
+	bool paused;
 
 
 private:
@@ -58,7 +59,7 @@ private:
 	constexpr static uint8_t NOT_CLASSIC_SCALE = 2;
 	constexpr static uint16_t SCREEN_WIDTH = 1080;
 	constexpr static uint16_t SCREEN_HEIGHT = 720;
-	constexpr static uint8_t CURSOR_SPEED = 20;
+	constexpr static uint8_t CURSOR_SPEED = 5;
 	constexpr static uint8_t OBJECTSPEED = 8;
 	constexpr static uint8_t PONG_SPEED = 3;
 	constexpr static Uint32 TIMER_DURATION = 500;

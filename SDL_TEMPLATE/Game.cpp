@@ -9,7 +9,8 @@ Game::Game() : gWindow(nullptr), gRenderer(nullptr), gGameController1(nullptr),
 				currentController(nullptr), leftPaddle(nullptr), centerLeftPaddle(nullptr),
 				centerRightPaddle(nullptr), rightPaddle(nullptr), 
 				pong1(nullptr), pong2(nullptr), timerPong1(nullptr), timerPong2(nullptr),
-				player1Score(nullptr), player2Score(nullptr), bot1Score(nullptr), bot2Score(nullptr)
+				player1Score(nullptr), player2Score(nullptr), bot1Score(nullptr), bot2Score(nullptr),
+				paused(false)
 				{}
 
 Game::~Game() {}
@@ -176,6 +177,8 @@ void Game::resetFlags() {
 
 	flags->dirUP2 = 0;
 	flags->dirDP2 = 0;
+
+	paused = false;
 }
 
 void Game::drawCenterLines() {
@@ -584,45 +587,125 @@ void Game::input() {
 
 			// If playing
 			if (flags->inPlaying) {
-				if ((gEvent.type == SDL_KEYDOWN) && (gEvent.key.keysym.sym == SDLK_ESCAPE)) {
-					freeGameResources();
-					resetFlags();
-				}
-
-				// Handle first input
+				// If done, press anything to continue
 				{
-					if (gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERAXISMOTION) {
-						gGameController1->inputXYDir();
+					if (flags->isClassic) {
+						bool finished1 = *player1Score >= 10 || *bot1Score >= 10;
 
-						flags->dirU = gGameController1->controllerAngle >= 67.5 && gGameController1->controllerAngle < 112.5;
-						flags->dirD = gGameController1->controllerAngle >= -112.5 && gGameController1->controllerAngle < -67.5;
-					} else if ((gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP) && gGameController1 == nullptr) {
-						// Handle key 'w' events
-						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 1;
-						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 0;
+						if (finished1 && gEvent.type == SDL_KEYDOWN) {
+							freeGameResources();
+							resetFlags();
+						}
 
-						// Handle key 's' events
-						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 1;
-						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 0;
+						if (finished1 && gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN) {
+							freeGameResources();
+							resetFlags();
+						}
+
+						if (finished1 && gGameController2 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN) {
+							freeGameResources();
+							resetFlags();
+						}
+					}
+
+					if (flags->isDoubleEnemy || flags->isDoublePaddle) {
+						bool finished1 = *player1Score >= 10 || *bot1Score >= 10;
+						bool finished2 = *player2Score >= 10 || *bot2Score >= 10;
+
+						if (finished1 && finished2 && gEvent.type == SDL_KEYDOWN) {
+							freeGameResources();
+							resetFlags();
+						}
+
+						if (finished1 && finished2 && gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN) {
+							freeGameResources();
+							resetFlags();
+						}
+
+						if (finished1 && finished2 && gGameController2 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN) {
+							freeGameResources();
+							resetFlags();
+						}
 					}
 				}
 
-				// If two players, handle second input
-				if (flags->isTwoPlayer || flags->isDoublePaddle) {
-					if (gGameController2 != nullptr && gEvent.type == SDL_CONTROLLERAXISMOTION) {
-						gGameController2->inputXYDir();
+				// Check for escape inputs
+				{
+					if ((gEvent.type == SDL_KEYDOWN) && (gEvent.key.keysym.sym == SDLK_ESCAPE)) {
+						freeGameResources();
+						resetFlags();
+					}
 
-						flags->dirUP2 = gGameController2->controllerAngle >= 67.5 && gGameController2->controllerAngle < 112.5;
-						flags->dirDP2 = gGameController2->controllerAngle >= -112.5 && gGameController2->controllerAngle < -67.5;
-					} else if (gGameController2 == nullptr && (gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP)) {
-						// Handle key 'arrow up' events
-						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_UP) flags->dirUP2 = 1;
-						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_UP) flags->dirUP2 = 0;
+					if (gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN && gEvent.cbutton.button == SDL_CONTROLLER_BUTTON_GUIDE) {
+						freeGameResources();
+						resetFlags();
+					}
 
-						// Handle key 'arrow down' events
-						if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirDP2 = 1;
-						if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirDP2 = 0;
+					if (gGameController2 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN && gEvent.cbutton.button == SDL_CONTROLLER_BUTTON_GUIDE) {
+						freeGameResources();
+						resetFlags();
+					}
+				}
 
+				// Check for pause inputs
+				{
+					if ((gEvent.type == SDL_KEYDOWN) && (gEvent.key.keysym.sym == SDLK_p)) {
+						paused = !paused;
+					}
+
+					if (gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN && gEvent.cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
+						paused = true;
+					}
+
+					if (gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN && gEvent.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+						if (paused) paused = false;
+					}
+
+					if (gGameController2 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN && gEvent.cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
+						paused = true;
+					}
+
+					if (gGameController2 != nullptr && gEvent.type == SDL_CONTROLLERBUTTONDOWN && gEvent.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+						if (paused) paused = false;
+					}
+				}
+
+				if (!paused) {
+					// Handle first input
+					{
+						if (gGameController1 != nullptr && gEvent.type == SDL_CONTROLLERAXISMOTION) {
+							gGameController1->inputXYDir();
+
+							flags->dirU = gGameController1->controllerAngle >= 67.5 && gGameController1->controllerAngle < 112.5;
+							flags->dirD = gGameController1->controllerAngle >= -112.5 && gGameController1->controllerAngle < -67.5;
+						} else if ((gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP) && gGameController1 == nullptr) {
+							// Handle key 'w' events
+							if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 1;
+							if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_w) flags->dirU = 0;
+
+							// Handle key 's' events
+							if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 1;
+							if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_s) flags->dirD = 0;
+						}
+					}
+
+					// If two players, handle second input
+					if (flags->isTwoPlayer || flags->isDoublePaddle) {
+						if (gGameController2 != nullptr && gEvent.type == SDL_CONTROLLERAXISMOTION) {
+							gGameController2->inputXYDir();
+
+							flags->dirUP2 = gGameController2->controllerAngle >= 67.5 && gGameController2->controllerAngle < 112.5;
+							flags->dirDP2 = gGameController2->controllerAngle >= -112.5 && gGameController2->controllerAngle < -67.5;
+						} else if (gGameController2 == nullptr && (gEvent.type == SDL_KEYDOWN || gEvent.type == SDL_KEYUP)) {
+							// Handle key 'arrow up' events
+							if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_UP) flags->dirUP2 = 1;
+							if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_UP) flags->dirUP2 = 0;
+
+							// Handle key 'arrow down' events
+							if (gEvent.type == SDL_KEYDOWN && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirDP2 = 1;
+							if (gEvent.type == SDL_KEYUP && gEvent.key.keysym.sym == SDLK_DOWN) flags->dirDP2 = 0;
+
+						}
 					}
 				}
 			}
@@ -704,7 +787,7 @@ void Game::update() {
 	}
 
 	// If playing
-	if (flags->inPlaying) {
+	if (flags->inPlaying && !paused) {
 
 		// Update paddles
 		{
@@ -946,7 +1029,7 @@ void Game::render() {
 		}
 	}
 
-	if (flags->inPlaying) {
+	if (flags->inPlaying && !paused) {
 		SDL_ShowCursor(SDL_DISABLE);
 
 		// Render paddles
@@ -1028,6 +1111,16 @@ void Game::render() {
 				
 					text->loadFromRenderedText(gRenderer, messageLeft, &rectLeft);
 					text->loadFromRenderedText(gRenderer, messageRight, &rectRight);
+
+
+					rectLeft = { X_ALLOWANCE, 0, (SCREEN_WIDTH / 2) - (X_ALLOWANCE * 2), 25 };
+					rectLeft.y = ((SCREEN_HEIGHT / 2) - (rectLeft.h / 2)) + 60;
+
+					rectRight = { (SCREEN_WIDTH / 2) + X_ALLOWANCE, 0, (SCREEN_WIDTH / 2) - (X_ALLOWANCE * 2), 25 };
+					rectRight.y = ((SCREEN_HEIGHT / 2) - (rectRight.h / 2)) + 60;
+
+					text->loadFromRenderedText(gRenderer, "Press any key to continue...", &rectLeft);
+					text->loadFromRenderedText(gRenderer, "Press any key to continue...", &rectRight);
 				}
 			}
 
@@ -1050,7 +1143,7 @@ void Game::render() {
 					text->loadFromRenderedText(gRenderer, messageLeft, &rectLeft);
 					text->loadFromRenderedText(gRenderer, messageCenterLeft, &rectCenterLeft);
 				}
-
+			
 
 				bool finished2 = *player2Score >= 10 || *bot2Score >= 10;
 
@@ -1067,8 +1160,35 @@ void Game::render() {
 					text->loadFromRenderedText(gRenderer, messageCenterRight, &rectCenterRight);
 					text->loadFromRenderedText(gRenderer, messageRight, &rectRight);
 				}
+
+				if (finished1 && finished2) {
+					SDL_Rect rectLeft = { X_ALLOWANCE, 0, (SCREEN_WIDTH / 4) - (X_ALLOWANCE * 2), 25 };
+					rectLeft.y = ((SCREEN_HEIGHT / 2) - (rectLeft.h / 2)) + 60;
+
+					SDL_Rect rectCenterLeft = { (SCREEN_WIDTH / 4) + X_ALLOWANCE, 0, (SCREEN_WIDTH / 4) - (X_ALLOWANCE * 2), 25 };
+					rectCenterLeft.y = ((SCREEN_HEIGHT / 2) - (rectCenterLeft.h / 2)) + 60;
+
+					SDL_Rect rectCenterRight = { (SCREEN_WIDTH / 2) + X_ALLOWANCE, 0, (SCREEN_WIDTH / 4) - (X_ALLOWANCE * 2), 25 };
+					rectCenterRight.y = ((SCREEN_HEIGHT / 2) - (rectCenterRight.h / 2)) + 60;
+
+					SDL_Rect rectRight = { ((SCREEN_WIDTH / 4) * 3) + X_ALLOWANCE, 0, (SCREEN_WIDTH / 4) - (X_ALLOWANCE * 2), 25 };
+					rectRight.y = ((SCREEN_HEIGHT / 2) - (rectRight.h / 2)) + 60;
+
+					text->loadFromRenderedText(gRenderer, "Press any key to continue...", &rectLeft);
+					text->loadFromRenderedText(gRenderer, "Press any key to continue...", &rectCenterLeft);
+					text->loadFromRenderedText(gRenderer, "Press any key to continue...", &rectCenterRight);
+					text->loadFromRenderedText(gRenderer, "Press any key to continue...", &rectRight);
+				}
 			}
 		}
+	}
+
+	if (flags->inPlaying && paused) {
+		SDL_Rect rectPaused = { 0, 0, (SCREEN_WIDTH / 8) * 6, (SCREEN_HEIGHT / 8) * 2 };
+		rectPaused.x = (SCREEN_WIDTH / 2) - (rectPaused.w / 2);
+		rectPaused.y = (SCREEN_HEIGHT / 2) - (rectPaused.h / 2);
+
+		text->loadFromRenderedText(gRenderer, "PAUSED", &rectPaused);
 	}
 
 	SDL_RenderPresent(gRenderer);
