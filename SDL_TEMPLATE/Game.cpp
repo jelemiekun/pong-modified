@@ -53,6 +53,11 @@ void Game::init() {
 		std::cout << "SDL_Mixer initialized." << '\n';
 	}
 
+	SDL_Surface* iconSurface = IMG_Load("assets/icon.ico");
+	SDL_SetWindowIcon(gWindow, iconSurface);
+	SDL_FreeSurface(iconSurface);
+	iconSurface = nullptr;
+
 	sfx = new SFX;
 	sfx->initSFXs();
 	
